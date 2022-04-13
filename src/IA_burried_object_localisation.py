@@ -1,15 +1,11 @@
 from email.headerregistry import HeaderRegistry
 from genericpath import exists
-<<<<<<< HEAD
 from math import fabs
 from operator import index
 from this import d
 from tkinter.tix import Tree
 
 from sklearn.naive_bayes import GaussianNB
-=======
-from operator import index
->>>>>>> 2377358f6f5ed7feb032a74721058403d42f83b3
 from data_manipulation_burried_object_localisation import Data_extraction
 
 import numpy as np
@@ -20,13 +16,11 @@ import matplotlib.pyplot as plt
 #%%
 
 #______________sckitlearn
-<<<<<<< HEAD
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import tree
-=======
 from sklearn.model_selection import train_test_split
 
->>>>>>> 2377358f6f5ed7feb032a74721058403d42f83b3
+
 from sklearn import preprocessing
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -35,22 +29,22 @@ from sklearn.neural_network import MLPClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 
-<<<<<<< HEAD
+
 
 from sklearn.ensemble import ExtraTreesClassifier
-=======
+
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import cross_val_score
 
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
->>>>>>> 2377358f6f5ed7feb032a74721058403d42f83b3
+
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import plot_confusion_matrix
-<<<<<<< HEAD
+
 from sklearn.model_selection import cross_val_score, train_test_split, cross_validate, GridSearchCV
 from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix, make_scorer, accuracy_score, precision_score
 
@@ -59,15 +53,14 @@ from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix, make_score
 import utils.augmentation as aug
 import utils.helper as hlp
 
-=======
->>>>>>> 2377358f6f5ed7feb032a74721058403d42f83b3
+
 #%%
 
 class Artificial_intelligence(Data_extraction) :
     
     def __init__(self) -> None:
         super().__init__()
-<<<<<<< HEAD
+
         self.path_to_data = os.path.join(self.path_to_data_dir, 'data.csv')
         self.path_to_features = os.path.join(self.path_to_data_dir, "features.csv")
         self.path_to_labels = os.path.join(self.path_to_data_dir, "labels.csv")
@@ -263,7 +256,7 @@ class Artificial_intelligence(Data_extraction) :
             
         df_features.to_csv(os.path.join(self.path_to_data_dir, "features.csv"), header=False, index=False)
         df_labels.to_csv(os.path.join(self.path_to_data_dir, "labels.csv"), header=False, index=False)
-=======
+
         self.path_to_data = os.path.join(os.getcwd(), "DATA")
         self.path_to_labels = "/home/martinho/Documents/Electric_sense_for_burried_objects_locating_classification/Own_article_script/DATA/labels.csv"
         
@@ -300,13 +293,8 @@ class Artificial_intelligence(Data_extraction) :
         df_labels = pd.DataFrame(labels)
         
         df_labels.to_csv(os.path.join(self.path_to_data, "labels.csv"), header=False, index=False)
->>>>>>> 2377358f6f5ed7feb032a74721058403d42f83b3
+
         
-        self.features = df_features
-        self.labels = df_labels
-        
-        
-<<<<<<< HEAD
     def data_split(self):
         
         self.features =  pd.read_csv(self.path_to_features, header=None, index_col=None)
@@ -467,69 +455,5 @@ if __name__ == '__main__' :
     
     plt.show()
     
-=======
 
-    
-    
-def features_normalisation(features):
-    
-    min = np.min(features, axis=0)
-    max = np.max(features, axis=0)
-    
-    features_normalized = (features - min)/(max - min)
-
-    return features_normalized
-
-if __name__ == '__main__' :
-
-    arti_intelli = Artificial_intelligence()
-    arti_intelli.features_extraction() 
-    X_train, X_test, y_train, y_test = train_test_split( arti_intelli.features , arti_intelli.labels, test_size=0.33, shuffle = True, random_state=42)
-    
-    X_train = np.array(X_train, dtype=np.float64)
-    y_train = np.array(y_train, dtype=np.float64).reshape((X_train.shape[0], ))
-    X_test = np.array(X_test, dtype=np.float64)
-    y_test = np.array(y_test, dtype=np.float64).reshape((X_test.shape[0], )) 
-    
-    # clf_lr = make_pipeline(preprocessing.StandardScaler(), LogisticRegression())
-    clf_lr = make_pipeline(preprocessing.MinMaxScaler(), LogisticRegression())
-    clf_lr.fit(X_train, y_train) 
-    clf_lr.score(X_test, y_test) 
-    
-    print(" prediction score : ", clf_lr.score(X_test, y_test))
-    
-        
-    
-    print("Matrice de confusion normalisé")
-    plot_confusion_matrix(clf_lr, X_test, y_test, normalize='true')
-
-    print("Matrice de confusion non normalisé")
-    plot_confusion_matrix(clf_lr, X_test, y_test)
-
-    
-    # # Neural Network
-    # clf_nn = MLPClassifier()
-    # clf_nn.fit(X_train, y_train)
-    # print(" prediction score : ", clf_nn.score(X_test, y_test)) 
-    
-    # # SVM
-    # clf_svm = svm.SVC()
-    # clf_svm.fit(X_train, y_train)
-    # print(" prediction score : ", clf_svm.score(X_test, y_test))
-
-
-    # # Random Forest
-    # clf_rf = RandomForestClassifier()
-    # clf_rf.fit(X_train, y_train)
-    # print(" prediction score : ", clf_rf.score(X_test, y_test))
-    
-    
-    #     #--------------------- prediction 
-    Y_pred_lr = clf_lr.predict(X_test)
-    
-    print(Y_pred_lr, y_test)
-    # Y_pred_nn = clf_nn.predict(X_test)
-    # Y_pred_svm = clf_svm.predict(X_test)
-    # Y_pred_rf= clf_rf.predict(X_test)
-    plt.show()
->>>>>>> 2377358f6f5ed7feb032a74721058403d42f83b3
+ 
