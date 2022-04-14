@@ -1,3 +1,4 @@
+from doctest import FAIL_FAST
 from email.headerregistry import HeaderRegistry
 from genericpath import exists
 from math import fabs
@@ -56,12 +57,12 @@ import utils.helper as hlp
 
 #%%
 
-class Artificial_intelligence(Data_extraction) :
+class Artificial_intelligence(Data_extraction) : 
     
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self)-> None:
+        super().__init__(ESSAI=1, TEST=2)
 
-        self.path_to_data = os.path.join(self.path_to_data_dir, 'data.csv')
+        self.path_to_data = os.path.join(self.path_to_data_dir, 'data5.csv') # data for pipe 1 and z = 5
         self.path_to_features = os.path.join(self.path_to_data_dir, "features.csv")
         self.path_to_labels = os.path.join(self.path_to_data_dir, "labels.csv")
         
@@ -115,9 +116,11 @@ class Artificial_intelligence(Data_extraction) :
         df_features.to_csv(os.path.join(self.path_to_data_dir, "features.csv"), header=False, index=False)
         df_labels.to_csv(os.path.join(self.path_to_data_dir, "labels.csv"), header=False, index=False)
         
+        
         self.features = df_features
         self.labels = df_labels
-     
+        
+        print("end of features extraction")
     
     def features_extraction_segment(self,segment_width):
         
@@ -173,9 +176,10 @@ class Artificial_intelligence(Data_extraction) :
         df_features.to_csv(os.path.join(self.path_to_data_dir, "features.csv"), header=False, index=False)
         df_labels.to_csv(os.path.join(self.path_to_data_dir, "labels.csv"), header=False, index=False)
         
+        print("end of features extraction")
+        
         self.features = df_features
         self.labels = df_labels
-        self.signal_shape = segment_width # 10
         
         
     def data_augmentation(self):
@@ -207,7 +211,6 @@ class Artificial_intelligence(Data_extraction) :
             dp_window_slice = aug.window_slice(dp_values)
             print("\n ------------------spawner launch--------------------\n")
             dp_spawner = aug.spawner(dp_values, np.array([0]*13), sigma=4*1e-15)
-            print("end")
             print("\n ------------------wdba launch--------------------\n")
             dp_wdba = aug.wdba(dp_values, np.array([0]*13), verbose=-1)
             print("\n ------------------random_guided_warp launch--------------------\n")
@@ -245,7 +248,7 @@ class Artificial_intelligence(Data_extraction) :
         
         print("features :", X.shape)
         
-        y = np.array(list(y.flatten())*11).reshape(-1,1)
+        y = np.array(list(y.flatten())*11).reshape(-1,1) #  11 = nombre de techniques de data augmentation
 
 
         df_features = pd.DataFrame(X)
@@ -257,44 +260,7 @@ class Artificial_intelligence(Data_extraction) :
         df_features.to_csv(os.path.join(self.path_to_data_dir, "features.csv"), header=False, index=False)
         df_labels.to_csv(os.path.join(self.path_to_data_dir, "labels.csv"), header=False, index=False)
 
-        self.path_to_data = os.path.join(os.getcwd(), "DATA")
-        self.path_to_labels = "/home/martinho/Documents/Electric_sense_for_burried_objects_locating_classification/Own_article_script/DATA/labels.csv"
-        
     
-    def features_extraction(self,z=5):
-        
-        #------------------------features ------------------
-        traj_dipole_value = self.extract_dipole_value_traji(range(17), z=z)
-        X=np.empty(shape=(2400,))
-        for list_dipole in traj_dipole_value :
-            
-            intensity_traj_i=np.empty(shape=(1,))
-            for dp_i in list_dipole[0:8] : 
-                intensity_traj_i = np.concatenate((intensity_traj_i, dp_i[:300,5]), axis = 0) 
-            
-            # intensity_traj_i_normalized = features_normalisation(intensity_traj_i[1:])
-            intensity_traj_i = intensity_traj_i[1:]
-            
-            X = np.concatenate((X, intensity_traj_i ), axis=0)       
-        
-        X = X[2400:].reshape(17, 2400)
-        
-        df_features = pd.DataFrame(X)
-         
-        if not os.path.exists(self.path_to_data) :
-            os.mkdir(self.path_to_data)
-            
-        df_features.to_csv(os.path.join(self.path_to_data, "features.csv"), header=False, index=False)
-        
-        #------------------------labels ------------------
-        
-        labels = np.array([0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0]).reshape((17,1))
-        
-        df_labels = pd.DataFrame(labels)
-        
-        df_labels.to_csv(os.path.join(self.path_to_data, "labels.csv"), header=False, index=False)
-
-        
     def data_split(self):
         
         self.features =  pd.read_csv(self.path_to_features, header=None, index_col=None)
@@ -308,24 +274,24 @@ class Artificial_intelligence(Data_extraction) :
         y_train = np.array(y_train, dtype=np.float64).reshape((X_train.shape[0], ))
         X_test = np.array(X_test, dtype=np.float64)
         y_test = np.array(y_test, dtype=np.float64).reshape((X_test.shape[0], )) 
-        print("end")
+        print("end of splitting")
         
         return X_train, y_train, X_test, y_test
       
 
-    def find_best_learning_params(self, model, type ='lr'):
+    def find_best_learning_params(self, model, type ='LR'):
         
         X_train, y_train, _, _ = self.data_split()
-        if type == 'lr' :
+        if type == 'LR' :
             C = [0.0001, 0.001, 0.01, 0.1, 1, 10]
             penalty = ['l1', 'l2', 'elasticnet', 'none']
             hyper_param_grid = dict(C = C, penalty=penalty)
-        elif type == 'nn' :
+        elif type == 'NN' :
             hidden_layer_sizes = [(100,), (100,100), (100,100,100)]
             activation = ['logistic', 'tanh', 'relu']
             alpha = [0.0001, 0.001, 0.01,0.1,1,10]
             hyper_param_grid = dict(hidden_layer_sizes=hidden_layer_sizes,activation=activation,alpha=alpha)
-        elif type == 'rf'  :
+        elif type == 'RF'  :
             n_estimators   = [1, 10, 100, 500, 1000] # The number of trees in the forest.
             max_depth      = [5, 10, 20]
             min_samples_leaf  = [1, 5, 10]
@@ -333,7 +299,7 @@ class Artificial_intelligence(Data_extraction) :
             # min_samples_split = [2, 10, 100] qui est la profondeur maximale d'un arbre
             hyper_param_grid = dict(n_estimators = n_estimators, max_depth = max_depth,min_samples_leaf = min_samples_leaf)
             
-        elif type == 'svm'  :
+        elif type == 'SVM'  :
             C = [1e3, 5e3, 1e4, 5e4, 1e5, 1e6] 
             gamma = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5]
             kernel = [ 'rbf', 'linear', 'poly' ]
@@ -341,16 +307,16 @@ class Artificial_intelligence(Data_extraction) :
             hyper_param_grid = {'C': C, 'gamma': gamma, 'kernel': kernel}
         
         
-        elif type == 'nb'  :
+        elif type == 'NB'  :
             hyper_param_grid = { 'var_smoothing': np.logspace(0,-9, num=100)}
             
-        elif type == 'et'  :
+        elif type == 'ET'  :
             hyper_param_grid = { 'n_estimators':  [int(x) for x in np.arange(start = 100, stop = 500, step = 100)],'max_depth': [2,8,16,32,50],
                            # 'min_sample_split': [2,4,6],'min_sample_leaf': [1,2],#'oob_score': [True, False],
                             'max_features': ['auto','sqrt','log2'], #'bootstrap': [True, False],'warm_start': [True, False], 'criterion': ['mse', 'mae'],
                             }
                  
-        elif type == 'dt'  :      
+        elif type == 'DT'  :      
             
             hyper_param_grid = {
                 'max_depth': [2, 3, 5, 10, 20],
@@ -375,58 +341,34 @@ if __name__ == '__main__' :
 
     artificial_intelligence = Artificial_intelligence()
     
-    # artificial_intelligence.features_extraction_segment(segment_width=10) 
+    artificial_intelligence.features_extraction_segment(segment_width=10) 
     # artificial_intelligence.features_extraction(window_h=1) 
     # artificial_intelligence.data_augmentation() 
-       
-    
     
     X_train, y_train, X_test, y_test = artificial_intelligence.data_split()
     
-    lr = False
+    lr = True
     nn = False
     svm_ = False
     rf = False
     nb = False
-    et = True
+    et = False
     dt = False
+    
+        
+    choice = [ lr, nn, svm_, rf, nb, et, dt]
+    
+    dict_clf = { "LR" : LogisticRegression(), "NN" : MLPClassifier(), "SVM" : svm.SVC(),
+                  "RF" : RandomForestClassifier(), "GB" : GaussianNB(), "ET" : ExtraTreesClassifier(),
+                  "DT" : DecisionTreeClassifier() }
+    
+    type, clf = list(dict_clf.items())[ choice.index(True)] 
     
     # clf_lr = make_pipeline(preprocessing.StandardScaler(), LogisticRegression())
     # clf_lr = make_pipeline(preprocessing.MinMaxScaler(), LogisticRegression())
     
-    # logistic regression
-    if lr :
-        clf = LogisticRegression()
-        type = 'lr'
-    # # Neural Network
-    if nn :
-        clf = MLPClassifier()
-        type = 'nn'
-    #SVM
-    if svm_ :
-        clf  = svm.SVC()
-        type = 'svm'
-
-    # # Random Forest
-    if rf :
-        clf  = RandomForestClassifier()
-        type = 'rf'
-
-    # # Naives bayes
-    if nb :
-        clf  = GaussianNB()
-        type = 'nb'
+    print("--------------------------- {} -----------------".format(type))
     
-    # # ExtraTreesClassifier
-    if et :
-        clf = ExtraTreesClassifier()
-        type = 'et'
-    
-    # # Decision tree
-    if dt :
-        clf    = DecisionTreeClassifier()    
-        type = 'dt'
-    # 
     # #-------------------hyperparameters -----------------
     artificial_intelligence.find_best_learning_params(clf, type=type)
     clf.set_params(**artificial_intelligence.best_params)
@@ -446,7 +388,7 @@ if __name__ == '__main__' :
     print("Matrice de confusion non normalisé")
     plot_confusion_matrix(clf, X_test, y_test)
     
-    if dt:
+    if dt :
         fig = plt.figure()
         _ = tree.plot_tree(clf,
                         feature_names=pd.DataFrame(X_train).columns,
