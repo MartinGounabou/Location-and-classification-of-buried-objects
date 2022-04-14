@@ -1,5 +1,8 @@
 
+from cProfile import label
 from doctest import FAIL_FAST
+
+from regex import F
 from data_manipulation_burried_object_localisation import Data_extraction
 
 import numpy as np
@@ -201,10 +204,10 @@ if __name__ == '__main__' :
 
     X_train, y_train, X_test, y_test = artificial_intelligence.data_split()
 
-    LR = False
+    LR = True
     BR = False
     DT = False
-    RF = True
+    RF = False
     SVR_ = False
     
     choice = [ LR, BR, DT, RF, SVR_]
@@ -234,7 +237,22 @@ if __name__ == '__main__' :
     print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(mse_train, mse_test, mae_train, mae_test))
     
 
+    y_pred_lr = model.predict(X_test)
 
+    fig, axes = plt.subplots(2,3)
+    axes = axes.flatten()
+    
+    for i in range(6):
+
+        X_test_i = X_test[i].reshape((13,10))
+
+        for j in range(13) :
+            axes[i].plot(X_test_i[j])
+
+        axes[i].set_xlabel("true {}, pred {}".format(y_pred_lr[i],y_test[i]))
+        axes[i].grid(True)
+
+    plt.show()
     #########################################################################
     # # #-------------------hyperparameters -----------------
     # artificial_intelligence.find_best_learning_params(clf, type=type)
@@ -243,7 +261,6 @@ if __name__ == '__main__' :
 
 
 
-    # y_pred_lr = model.predict(X_test)
     
     
     # fig, axes = plt.subplots(1,3, figsize=(10,20))

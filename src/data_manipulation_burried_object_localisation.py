@@ -311,9 +311,9 @@ class Data_extraction:
        
         pas = 2
         
-        # alt_z_val = np.arange(5, 20+pas, pas)  # TEST 2 ESSAI 1
+        alt_z_val = np.arange(5, 20+pas, pas)  # TEST 2 ESSAI 1
         
-        alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
+        # alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
         
         self.num_alt = len(alt_z_val)
         X_interp = np.zeros((self.num_alt, self.traj, self.dp_n, self.signal_shape))
@@ -425,28 +425,32 @@ class Data_extraction:
         
     
     def generate_data_for_interp(self):
-        #     # interpolation
+            # interpolation
         # for z in range(4,16,4):
         #     self.save_data_z(z=z)
             
-        alt = [4, 8, 12]
+        # alt = [4, 8, 12]
         
+        for z in range(5,25,5):
+            self.save_data_z(z=z)
+
+        alt = range(5,25,5)
         self.extract_dipole_value_all_altitude(alt_z=alt)
         
 
 #%% define a box
 if __name__ == '__main__':
 
-    # data_extraction = Data_extraction(ESSAIS = 1, TEST=2)
-    data_extraction = Data_extraction(ESSAI = 2, TEST=2)
+    data_extraction = Data_extraction(ESSAI = 1, TEST=2)
+    # data_extraction = Data_extraction(ESSAI = 2, TEST=2)
     
     
-    data_extraction.plot_dipole_traji_dipolej([16], range(13), z = 10, axis_x=True)
-    plt.show()
+    # data_extraction.plot_dipole_traji_dipolej([16], range(13), z = 10, axis_x=True)
+    # plt.show()
     
     # interpolation
     
-    # data_extraction.generate_data_for_interp()
+    data_extraction.generate_data_for_interp()
     # data_extraction.plot_cartographie([1], z = 5)
     
 #%%
