@@ -151,7 +151,8 @@ class Artificial_intelligence(Data_extraction) :
         
         print("features shape   :" , self.features.shape)
         
-        X_train, X_test, y_train, y_test = train_test_split( self.features , self.labels, test_size=0.33, shuffle = True, random_state=42)
+
+        X_train, X_test, y_train, y_test = train_test_split( self.features , self.labels, test_size=0.33, stratify= np.array(self.labels), shuffle = True, random_state=42)
         
         X_train = np.array(X_train, dtype=np.float64)
         y_train = np.array(y_train, dtype=np.float64).reshape((X_train.shape[0], ))
@@ -195,8 +196,8 @@ if __name__ == '__main__' :
         
 
     
-    artificial_intelligence.features_extraction() 
-    # artificial_intelligence.features_extraction_segment(segment_width=10) 
+    # artificial_intelligence.features_extraction() 
+    artificial_intelligence.features_extraction_segment(segment_width=10) 
 
     X_train, y_train, X_test, y_test = artificial_intelligence.data_split()
 
