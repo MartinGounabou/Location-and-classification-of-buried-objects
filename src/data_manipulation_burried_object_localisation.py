@@ -294,12 +294,12 @@ class Data_extraction:
         return np.array(signal_allz, dtype=np.float64).T # signal pour toutes les altitudes 
     
     
-    def extract_dipole_value_all_altitude(self):
+    def extract_dipole_value_all_altitude(self, alt_z =  [5 , 10 , 15, 20]  ):
 
         data = []
         X_no_interp = []
         
-        for z in self.z :
+        for z in alt_z  :
             data.append(pd.read_csv(os.path.join(self.path_to_data_dir, 'data{}.csv'.format(z)), header=None, index_col=None))
 
 
@@ -309,15 +309,18 @@ class Data_extraction:
         self.traj = int( data[0].shape[0] )
 
 
-        for i in range(len(self.z )):
+        for i in range(len(alt_z )):
             X_no_interp.append(np.array(data[i].iloc[:,:-2], dtype=np.float64).reshape(-1,self.dp_n,self.signal_shape))
        
-        pas = 0.5
-        alt_z_val = np.arange(5, 20+pas, pas) 
-        alt_z = [5 , 10 , 15, 20]
+        pas = 2
+        
+        # alt_z_val = np.arange(5, 20+pas, pas)  # TEST 2 ESSAI 1
+        
+        alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
+        
         self.num_alt = len(alt_z_val)
         X_interp = np.zeros((self.num_alt, self.traj, self.dp_n, self.signal_shape))
-        y = np.arange(5, 20+pas, pas).reshape(-1,1) # array  of signal_shape
+        y = alt_z_val.reshape(-1,1) # array  of signal_shape
         
         # #     #------------------------features + window------------------      
         print(" le nombre de trajectoires est {} ".format(self.traj))    
@@ -330,7 +333,6 @@ class Data_extraction:
                     list_signal = []
                     for x in X_no_interp :
                         list_signal.append(x[i][j])
-                        
                     X_interp[k][i][j] = self.interpolation_courbe(list_signal, alt_z,  alt_z_val)[k]
 
 
@@ -351,7 +353,8 @@ class Data_extraction:
         
         # for j in range(6):
         #     axes[j].plot(X_interp[0,j*self.signal_shape:(j+1)*self.signal_shape])
-            
+        
+        # plt.show()
         print( "file for all altitude created")
 
 
@@ -386,7 +389,7 @@ class Data_extraction:
             choice = ( [" times " ] + ( [[" X (cm)"], ["Y(cm) "]][self.TEST - 1] ) )[axis_x]
             plt.xlabel(choice)
             plt.ylabel("I_rms")
-            plt.title(" Traj : {}, alt : {}cm, pipe : {} ".format(num_traj_list[traj], z, self.pipe))
+            plt.title(" Traj : {}, alt : {}cm, pipe : {} ".format(num_traj_list[traj]+1, z, self.pipe))
             plt.grid()
             plt.legend()
 
@@ -426,25 +429,28 @@ class Data_extraction:
     
     def generate_data_for_interp(self):
         #     # interpolation
-        for z in range(5,25,5):
-            self.save_data_z(z=z)
-        self.extract_dipole_value_all_altitude()
+        # for z in range(4,16,4):
+        #     self.save_data_z(z=z)
+            
+        alt = [4, 8, 12]
+        
+        self.extract_dipole_value_all_altitude(alt_z=alt)
         
 
 #%% define a box
 if __name__ == '__main__':
 
     # data_extraction = Data_extraction(ESSAIS = 1, TEST=2)
-    data_extraction = Data_extraction(ESSAI = 1, TEST=2)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=2)
     
     
-    # data_extraction.plot_dipole_traji_dipolej(range(7), range(13), z = 4, axis_x=True)
+    # data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 4, axis_x=True)
     # plt.show()
     
     # interpolation
-    # data_extraction.generate_data_for_interp()
-    data_extraction.plot_cartographie([1], z = 5)
+    
+    data_extraction.generate_data_for_interp()
+    # data_extraction.plot_cartographie([1], z = 5)
     
 #%%
-
 
