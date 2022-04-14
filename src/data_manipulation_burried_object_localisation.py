@@ -4,9 +4,6 @@
 
 from cmath import pi
 from importlib.resources import path
-from tkinter import E
-from unittest import TestCase
-from jsonschema import draft201909_format_checker
 import matplotlib.pyplot as plt
 import os
 from time import time
@@ -393,7 +390,7 @@ class Data_extraction:
             plt.grid()
             plt.legend()
 
-        plt.show()
+        # plt.show()
 
 
     def plot_cartographie(self, num_dipole_list, z =5,  axis_x = True):
@@ -444,12 +441,12 @@ if __name__ == '__main__':
     data_extraction = Data_extraction(ESSAI = 2, TEST=2)
     
     
-    # data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 4, axis_x=True)
-    # plt.show()
+    data_extraction.plot_dipole_traji_dipolej([16], range(13), z = 10, axis_x=True)
+    plt.show()
     
     # interpolation
     
-    data_extraction.generate_data_for_interp()
+    # data_extraction.generate_data_for_interp()
     # data_extraction.plot_cartographie([1], z = 5)
     
 #%%
