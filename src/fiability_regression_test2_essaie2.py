@@ -139,7 +139,7 @@ class IHM(Data_extraction):
         lissage_dp = hlp.lissage(Y, 20)
 
 
-        ax[0].plot(np.linspace(40,160,300)[:-1],lissage_dp,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
+        ax[0].plot(np.linspace(40,160,300)[:-1],lissage_dp+3e4,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
         print("plotting")
         plt.grid()
 
@@ -163,7 +163,7 @@ class IHM(Data_extraction):
         for i in range(13) :
             Y = list(self.X[traj][i])
             lissage_dp = hlp.lissage(Y, 20)
-            ax[0].plot(np.linspace(40,160,300)[:-1],lissage_dp,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
+            ax[0].plot(np.linspace(40,160,300)[:-1],lissage_dp+3e4 ,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
 
 
         self.plot_real_z(ax, [traj], range(13), z =z )
@@ -188,7 +188,7 @@ class IHM(Data_extraction):
 
                 lissage_dp = hlp.lissage(list(Y), 20)
                 
-                ax[1].plot(X, lissage_dp,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
+                ax[1].plot(X, lissage_dp ,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
 
 
             plt.title(" Traj : {}, alt : {}cm, pipe : {} ".format(num_traj_list[traj]+1, z, self.pipe))

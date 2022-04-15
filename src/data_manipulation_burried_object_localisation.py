@@ -31,7 +31,7 @@ class Data_extraction:
                     self.path, "Pipe 1 - BO = 1 cm/Echosondeur/Test2-Pipe1(BO=1cm)")
                 self.TEST = 2
                 self.traj = 17
-                self.pipe = 2
+                self.pipe = 1
 
             elif TEST == 1:
                 self.path = os.path.abspath(
@@ -311,13 +311,17 @@ class Data_extraction:
             I_z = []
             for signal in list_signal:
                 I_z.append(signal[i])
-            I_allz = np.interp(alt_z_val, alt_z, I_z)
-            signal_allz.append(I_allz)
+            # I_allz = np.interp(alt_z_val, alt_z, I_z)
+            # signal_allz.append(I_allz)
 
+            I_allz = cubicinterpolation(alt_z_val, alt_z, I_z)
+            signal_allz.append(I_allz)
+            
+            
         # signal pour toutes les altitudes
         return np.array(signal_allz, dtype=np.float64).T
 
-    def extract_dipole_value_all_altitude(self, alt_z=[5, 10, 15, 20]):
+    def extract_dipole_value_all_altitude(self, alt_z, alt_z_val):
 
         data = []
         X_no_interp = []
@@ -336,13 +340,6 @@ class Data_extraction:
             X_no_interp.append(np.array(
                 data[i].iloc[:, :-2], dtype=np.float64).reshape(-1, self.dp_n, self.signal_shape))
 
-        pas = 2
-
-        
-        alt_z_val = np.arange(5, 20+pas, pas)  # TEST 2 ESSAI 1
-        
-        # alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
-        
 
         self.num_alt = len(alt_z_val)
         X_interp = np.zeros(
@@ -374,7 +371,7 @@ class Data_extraction:
             os.mkdir(self.path_to_data_dir)
 
         df.to_csv(os.path.join(self.path_to_data_dir,
-                  "data_all_z_pipe2.csv"), header=False, index=False)
+                  "data_all_z.csv"), header=False, index=False)
 
         # fig, axes = plt.subplots(3,2, figsize=(15,12))
         # axes = axes.flatten()
@@ -455,27 +452,45 @@ class Data_extraction:
         plt.show()
 
     def generate_data_for_interp(self):
-            # interpolation
-        # for z in range(4,16,4):
-        #     self.save_data_z(z=z)
-
-            
-        # alt = [4, 8, 12]
+       
+        essai = 2
         
-        for z in range(5,25,5):
-            self.save_data_z(z=z)
+        if essai == 1 :
+            
+            for z in range(5,25,5):
+                self.save_data_z(z=z)
+                
+            pas = 0.5
+            alt_z_val = np.arange(5, 20+pas, pas)  # TEST 2 ESSAI 1
+            alt = range(5,25,5) 
+    
+            self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
+            
+            
+        elif essai == 2 :
 
-        alt = range(5,25,5)
+            for z in range(4,16,4):
+                self.save_data_z(z=z)
 
+            pas = 2
+            alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
+            alt = [4, 8, 12]
+    
+            self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
+        
+def cubicinterpolation(x_val, x, y): 
+    
+    f = interpolate.CubicSpline(x, y)
+    
+    return f(x_val)
 
-
-        self.extract_dipole_value_all_altitude(alt_z=alt)
+       
 
 
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 1, TEST=2)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=2)
     # data_extraction = Data_extraction(ESSAI = 2, TEST=2)
     
     

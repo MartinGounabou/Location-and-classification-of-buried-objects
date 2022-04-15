@@ -1,6 +1,8 @@
 
+# %%
 
 from cgi import test
+from operator import index
 from statistics import mode
 from data_manipulation_burried_object_localisation import Data_extraction
 
@@ -13,8 +15,6 @@ from scipy import integrate
 import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
-
-# %%
 
 # ______________sckitlearn
 from sklearn.tree import DecisionTreeClassifier
@@ -45,6 +45,8 @@ from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 
 from sklearn.metrics import explained_variance_score,mean_absolute_error,r2_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.utils import shuffle
 # --------------- utils
 
 import utils.augmentation as aug
@@ -166,9 +168,10 @@ class Artificial_intelligence(Data_extraction):
         print("features shape   :" , self.features.shape)
         
 
-        X_train, X_test, y_train, y_test = train_test_split( self.features , self.labels, test_size=0.33, stratify= np.array(self.labels), shuffle = True, random_state=42)
+        X_train, X_test, y_train, y_test, indice_train, indice_test = train_test_split( self.features , self.labels, range(self.labels.shape[0]),  test_size=0.33, stratify= np.array(self.labels), shuffle = True, random_state=42)
         
-
+        print("test indice ", indice_test)
+        
         X_train = np.array(X_train, dtype=np.float64)
         y_train = np.array(y_train, dtype=np.float64).reshape(
             (X_train.shape[0], ))
@@ -237,7 +240,7 @@ class Artificial_intelligence(Data_extraction):
         return X_new, y_new
         
 
-
+# %%
 if __name__ == '__main__':
 
     artificial_intelligence = Artificial_intelligence()
@@ -246,52 +249,52 @@ if __name__ == '__main__':
     artificial_intelligence.features_extraction_segment(segment_width=10) 
 
 
-    X_train, y_train, X_test, y_test = artificial_intelligence.data_split()
+    X_train, y_train, _ , _ = artificial_intelligence.data_split()
 
 
-    X_test , y_test = artificial_intelligence.test(segment_width=10)
+    # X_test , y_test = artificial_intelligence.test(segment_width=10)
     
     
+    # # X_test , y_test = shuffle(X_test[:10000] , y_test[:10000])
+
+    # param_grid = {  'bootstrap': [True], 'max_depth': [5, 10, None],
+    #     'max_features': ['auto', 'log2'], 
+    #         'n_estimators': [5, 6, 7, 8, 9, 10, 11, 12, 13, 15]}
+
+    # model = RandomForestRegressor(random_state = 1)
+
+    # g_search = GridSearchCV(estimator = model, param_grid = param_grid, 
+    #  cv = 3, n_jobs = 1, verbose = 0, return_train_score=True)
     
-    LR = False
-    BR = False
-    DT = False
-    RF = True
-    SVR_ = False
+    # g_search.fit(X_train, y_train)
 
-    choice = [LR, BR, DT, RF, SVR_]
+    # model.set_params(**g_search.best_params_)
+    # # #-------------------
 
-    model1 = LinearRegression()
-    model2 = BayesianRidge()
-    model3 = DecisionTreeRegressor()
-    model4 = RandomForestRegressor()
-    model5 = SVR()
+    # model.fit(X_train, y_train)
 
-    dict_model = {"LR": model1, "BR": model2,
-                  "DT": model3, "RF": model4, "SVR": model5}
-    name, model = list(dict_model.items())[choice.index(True)]
+    # print(" prediction score : ", model.score(X_test, y_test))
 
-    print("----------- {} -----------------".format(name))
 
-    model.fit(X_train, y_train)
-
-    y_pred_lr = model.predict(X_test)
+    # y_pred_lr = model.predict(X_test)
     
-    df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1)), axis=1))
+    # df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1), abs(y_test.reshape(-1,1)-y_pred_lr.reshape(-1,1))), axis=1))
 
-    df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
+    # df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
     
  
-    mse_train = mean_squared_error(model.predict(X_train), y_train)
-    mse_test = mean_squared_error(model.predict(X_test), y_test)
+    # mse_train = mean_squared_error(model.predict(X_train), y_train)
+    # mse_test = mean_squared_error(model.predict(X_test), y_test)
 
-    mae_train = mean_absolute_error(model.predict(X_train), y_train)
-    mae_test = mean_absolute_error(model.predict(X_test), y_test)
+    # mae_train = mean_absolute_error(model.predict(X_train), y_train)
+    # mae_test = mean_absolute_error(model.predict(X_test), y_test)
 
-    print(" R carre  {}".format(model.score(X_test, y_test)))
-    print()
+    # print(" R carre  {}".format(model.score(X_test, y_test)))
+    # print()
 
-    print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(mse_train, mse_test, mae_train, mae_test))
+    # print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(mse_train, mse_test, mae_train, mae_test))
+
+# %%
 
 
 
