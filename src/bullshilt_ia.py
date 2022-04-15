@@ -1,5 +1,7 @@
 
 
+from cgi import test
+from statistics import mode
 from data_manipulation_burried_object_localisation import Data_extraction
 
 import numpy as np
@@ -36,7 +38,13 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 
+from sklearn.linear_model import LinearRegression, Ridge,Lasso
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
 
+from sklearn.metrics import explained_variance_score,mean_absolute_error,r2_score
 # --------------- utils
 
 import utils.augmentation as aug
@@ -171,30 +179,63 @@ class Artificial_intelligence(Data_extraction):
 
         return X_train, y_train, X_test, y_test
 
-    def find_best_learning_params(self, model, type='lr'):
 
-        X_train, y_train, _, _ = self.data_split()
+    def test(self, segment_width=10):
+        
+        
+        path = os.path.join(self.path_to_data_dir, 'data_all_z_pipe2.csv')
+        
+        data = pd.read_csv(path, header=None, index_col=None)
+        
+        X = data.iloc[:, :-2]
+        y = data.iloc[:, -1]  # array  of signal_shape
+        signal_shape_array = data.iloc[:, -2]  # array  of signal_shape
 
-        if type == 'lr':
-            hyper_param_grid = {
-                'solver': ['svd', 'cholesky', 'lsqr', 'sag'],
+        X = np.array(X, dtype=np.float64)
+        y = np.array(y, dtype=np.float64)
 
-                'fit_intercept': [True, False],
+        self.signal_shape = np.array(signal_shape_array, dtype=np.int64)[0]
 
-            }
+        # #     #------------------------features + window------------------
 
-        else:
-            print("model type incorrect")
-        # ---------------------------------------
-
-        cv = GridSearchCV(model, param_grid=hyper_param_grid,
-                          cv=7, n_jobs=-1, verbose=0)
-
-        cv.fit(X_train, y_train)
-
-        self.best_params = cv.best_params_
-        print(self.best_params)
+        self.alt = X.shape[0]
     
+        self.traj_num = 17
+        # nombre de dipole
+        self.dp_n = int(X.shape[1]/(self.signal_shape*self.traj_num))
+
+        print(" le nombre de trajectoires est {} ".format(self.traj_num))
+        print(" le nombre de dipoles est {} ".format(self.dp_n))
+        print(" signal shape est {} ".format(self.signal_shape))
+
+        X = X.reshape(self.alt, self.traj_num, self.dp_n, self.signal_shape)
+
+        X_new = []
+        y_new = []
+
+        # labelisation
+        for alt in range(X.shape[0]):
+            for i in range(self.traj_num):
+                for k in range(int(self.signal_shape/segment_width)):
+
+                    Li = []
+                    for j in range(self.dp_n):
+                        Li.extend(
+                            list(X[alt][i][j][segment_width*k:segment_width*(k+1)]))
+
+                    if i in range(3, 15) and (75 <= k*segment_width <= 125):
+                        y_new.append(y[alt])
+
+                    else:
+                        y_new.append(y[alt])
+                    X_new.append(Li)
+
+        X_new = np.array(X_new)
+        print(X_new.shape)
+        y_new = np.array(y_new)
+        
+        return X_new, y_new
+        
 
 
 if __name__ == '__main__':
@@ -207,10 +248,15 @@ if __name__ == '__main__':
 
     X_train, y_train, X_test, y_test = artificial_intelligence.data_split()
 
-    LR = True
+
+    X_test , y_test = artificial_intelligence.test(segment_width=10)
+    
+    
+    
+    LR = False
     BR = False
     DT = False
-    RF = False
+    RF = True
     SVR_ = False
 
     choice = [LR, BR, DT, RF, SVR_]
@@ -228,6 +274,14 @@ if __name__ == '__main__':
     print("----------- {} -----------------".format(name))
 
     model.fit(X_train, y_train)
+
+    y_pred_lr = model.predict(X_test)
+    
+    df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1)), axis=1))
+
+    df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
+    
+ 
     mse_train = mean_squared_error(model.predict(X_train), y_train)
     mse_test = mean_squared_error(model.predict(X_test), y_test)
 
@@ -238,76 +292,106 @@ if __name__ == '__main__':
     print()
 
     print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(mse_train, mse_test, mae_train, mae_test))
+
+
+
+    # parameters = { 'loss' : ['ls', 'lad', 'huber', 'quantile'],
+    #             'learning_rate' : (0.05,0.25,0.50,1),
+    #             'criterion' : ['friedman_mse', 'mse', 'mae'],
+    #             'max_features' : ['auto', 'sqrt', 'log2']
+    #             }
+
+    # grid = GridSearchCV(GradientBoostingRegressor(),parameters)
     
+    # model = grid.fit(X_train,y_train)
+    # print(model.best_params_,'\n')
+    # print(model.best_estimator_,'\n')
 
-    y_pred_lr = model.predict(X_test)
+    # GradientBoostingRegressor(learning_rate=0.25, loss='lad', max_features='sqrt')    
 
-    fig, axes = plt.subplots(2,3)
-    axes = axes.flatten()
+
     
-    for i in range(6):
+    # print("----------- {} -----------------".format(name))
 
-        X_test_i = X_test[i].reshape((13,10))
+    # model.fit(X_train, y_train)
 
-        for j in range(13) :
-            axes[i].plot(X_test_i[j])
-
-        axes[i].set_xlabel("true {}, pred {}".format(y_pred_lr[i],y_test[i]))
-        axes[i].grid(True)
-
-
-    plt.show()
+    # y_pred_lr = model.predict(X_test)
     
-    #########################################################################
-    # # #-------------------hyperparameters -----------------
-    # artificial_intelligence.find_best_learning_params(clf, type=type)
-    # clf.set_params(**artificial_intelligence.best_params)
-    # # #-------------------
-
-    # fig, axes = plt.subplots(1,3, figsize=(10,20))
-
     # df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1)), axis=1))
 
     # df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
+    
+ 
+    # mse_train = mean_squared_error(model.predict(X_train), y_train)
+    # mse_test = mean_squared_error(model.predict(X_test), y_test)
 
-    # axes = axes.flatten()
-    # axes[0].plot( y_pred_lr[:31], label="pred")
-    # axes[1].plot( y_test[:31], label="test")
-    # axes[2].plot( y_pred_lr[:31], label="pred")
-    # axes[2].plot( y_test[:31], label="test")
-    # axes[2].plot( y_test, label="test")
-    # axes[3].plot(y_pred_lr- y_test, label="test")
+    # mae_train = mean_absolute_error(model.predict(X_train), y_train)
+    # mae_test = mean_absolute_error(model.predict(X_test), y_test)
 
-    # plt.figure()
-    # plt.scatter(range(len(y_test[:30])), y_test[:30], label= "test")
-    # plt.scatter(range(len(y_test[:30])), y_pred_lr[:30], label= "pred")
+    # print(" R carre  {}".format(model.score(X_test, y_test)))
+    # print()
 
-    # for i in range(30) :
-    #     plt.plot([i,i+1])
+    # print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(mse_train, mse_test, mae_train, mae_test))
 
+# head = 10
+# for model in regressors[:head]:
+#     start = time()
+#     model.fit(X_train, y_train)
+#     train_time = time() - start
+#     start = time()
+#     y_pred = model.predict(X_test)
+#     predict_time = time()-start    
+#     print(model)
+#     print("\tTraining time: %0.3fs" % train_time)
+#     print("\tPrediction time: %0.3fs" % predict_time)
+#     print("\tExplained variance:", explained_variance_score(y_test, y_pred))
+#     print("\tMean absolute error:", mean_absolute_error(y_test, y_pred))
+#     print("\tR2 score:", r2_score(y_test, y_pred))
+#     print()
+    
+# regressors = [
+#     KNeighborsRegressor(),
+#     GradientBoostingRegressor(),
+#     KNeighborsRegressor(),
+#     ExtraTreesRegressor(),
+#     RandomForestRegressor(),
+#     DecisionTreeRegressor(),
+#     LinearRegression(),
+#     Lasso(),
+#     Ridge()
+# ]
 
-# %%
-    # visualisation des erreurs sous forme de segment
-    # w1 = 5000
-    # w2 = 5040
-    # lines = [[(i, y_test[i]), (i, y_pred_lr[i])] for i in range(w1,w2)]
+# from time import time
 
-    # lc = mc.LineCollection(lines, linewidths=2)
-    # fig, ax = pl.subplots()
-    # ax.add_collection(lc)
-    # ax.scatter(range(w1,w2), y_pred_lr[w1:w2], label= "pred", s=4, c='red')
-    # ax.scatter(range(w1,w2), y_test[w1:w2], label= "label", s=4, c='black')
-    # ax.autoscale()
-    # ax.margins(0.1)
-    # plt.title(" comparaison y_true et y_pred")
-    # plt.xlabel(" echantillons ")
-    # plt.ylabel(" alt(cm) ")
-    # plt.legend()
+# from sklearn.linear_model import LinearRegression, Ridge,Lasso
+# from sklearn.neighbors import KNeighborsRegressor
+# from sklearn.ensemble import GradientBoostingRegressor
+# from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
+# from sklearn.tree import DecisionTreeRegressor
 
-    # plt.figure()
-    # plt.plot(np.abs(y_pred_lr-y_test)[w1:w2])
-    # plt.title("valeur absolue de l'erreur")
-    # plt.xlabel(" echantillons ")
-    # plt.ylabel(" abs(ytest_ypred) ")
-    # plt.legend()
-    # plt.show()
+# from sklearn.metrics import explained_variance_score,mean_absolute_error,r2_score
+
+# parameters = { 'loss' : ['ls', 'lad', 'huber', 'quantile'],
+#               'learning_rate' : (0.05,0.25,0.50,1),
+#               'criterion' : ['friedman_mse', 'mse', 'mae'],
+#               'max_features' : ['auto', 'sqrt', 'log2']
+#              }
+
+# grid = GridSearchCV(GradientBoostingRegressor(),parameters)
+# model = grid.fit(X_sc,y)
+# print(model.best_params_,'\n')
+# print(model.best_estimator_,'\n')
+
+# {'criterion': 'friedman_mse', 'learning_rate': 0.25, 'loss': 'lad', 'max_features': 'sqrt'} 
+
+# GradientBoostingRegressor(learning_rate=0.25, loss='lad', max_features='sqrt')    
+    
+    
+    
+    
+    
+    
+
+    
+
+    # y_pred_lr = model.predict(X_test)

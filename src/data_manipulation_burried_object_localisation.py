@@ -3,7 +3,6 @@
 # ------Importation
 
 from cmath import pi
-from importlib.resources import path
 import matplotlib.pyplot as plt
 import os
 from time import time
@@ -32,7 +31,7 @@ class Data_extraction:
                     self.path, "Pipe 1 - BO = 1 cm/Echosondeur/Test2-Pipe1(BO=1cm)")
                 self.TEST = 2
                 self.traj = 17
-                self.pipe = 1
+                self.pipe = 2
 
             elif TEST == 1:
                 self.path = os.path.abspath(
@@ -375,7 +374,7 @@ class Data_extraction:
             os.mkdir(self.path_to_data_dir)
 
         df.to_csv(os.path.join(self.path_to_data_dir,
-                  "data_all_z.csv"), header=False, index=False)
+                  "data_all_z_pipe2.csv"), header=False, index=False)
 
         # fig, axes = plt.subplots(3,2, figsize=(15,12))
         # axes = axes.flatten()
@@ -480,7 +479,7 @@ if __name__ == '__main__':
     # data_extraction = Data_extraction(ESSAI = 2, TEST=2)
     
     
-    # data_extraction.plot_dipole_traji_dipolej([16], range(13), z = 10, axis_x=True)
+    # data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 10, axis_x=True)
     # plt.show()
     
     # interpolation
