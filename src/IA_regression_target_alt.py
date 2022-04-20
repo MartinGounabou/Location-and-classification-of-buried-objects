@@ -1,7 +1,7 @@
+# %%
 
 
 from data_manipulation_burried_object_localisation import Data_extraction
-
 import numpy as np
 import scipy as sp
 import pandas as pd
@@ -12,43 +12,31 @@ import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
 
-# %%
 
 # ______________sckitlearn
-from sklearn.tree import DecisionTreeClassifier
-from sklearn import tree
-from sklearn import preprocessing
-from sklearn.preprocessing import MultiLabelBinarizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.neural_network import MLPClassifier
-from sklearn import svm
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.svm import SVC
+
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.model_selection import cross_val_score, train_test_split, cross_validate, GridSearchCV
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix, make_scorer, accuracy_score, precision_score, mean_squared_error
+from sklearn.metrics import confusion_matrix, make_scorer, accuracy_score, precision_score, mean_squared_error
 from sklearn.linear_model import LinearRegression, BayesianRidge
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
-
-
+from sklearn.utils import shuffle
 # --------------- utils
 
 import utils.augmentation as aug
 import utils.helper as hlp
 
-# %%
+
 
 
 class Artificial_intelligence(Data_extraction):
 
     def __init__(self) -> None:
-        super().__init__(ESSAI=1, TEST=2)
+        super().__init__(ESSAI=2, TEST=2)
         self.path_to_data = os.path.join(
             self.path_to_data_dir, 'data_all_z.csv')
         self.path_to_features = os.path.join(
@@ -196,21 +184,75 @@ class Artificial_intelligence(Data_extraction):
         print(self.best_params)
     
 
+    def load_E2T2P2_data(self, segment_width=10):
+        
+        
+        path = os.path.join(self.path_to_data_dir, 'data_all_z_pipe2.csv')
+        
+        data = pd.read_csv(path, header=None, index_col=None)
+        
+        X = data.iloc[:, :-2]
+        y = data.iloc[:, -1]  # array  of signal_shape
+        signal_shape_array = data.iloc[:, -2]  # array  of signal_shape
+
+        X = np.array(X, dtype=np.float64)
+        y = np.array(y, dtype=np.float64)
+
+        self.signal_shape = np.array(signal_shape_array, dtype=np.int64)[0]
+
+        # #     #------------------------features + window------------------
+
+        self.alt = X.shape[0]
+    
+        self.traj_num = 17
+        # nombre de dipole
+        self.dp_n = int(X.shape[1]/(self.signal_shape*self.traj_num))
+
+        print(" le nombre de trajectoires est {} ".format(self.traj_num))
+        print(" le nombre de dipoles est {} ".format(self.dp_n))
+        print(" signal shape est {} ".format(self.signal_shape))
+
+        X = X.reshape(self.alt, self.traj_num, self.dp_n, self.signal_shape)
+
+        X_new = []
+        y_new = []
+
+        # labelisation
+        for alt in range(X.shape[0]):
+            for i in range(self.traj_num):
+                for k in range(int(self.signal_shape/segment_width)):
+
+                    Li = []
+                    for j in range(self.dp_n):
+                        Li.extend(
+                            list(X[alt][i][j][segment_width*k:segment_width*(k+1)]))
+
+                    if i in range(3, 15) and (75 <= k*segment_width <= 125):
+                        y_new.append(y[alt])
+
+                    else:
+                        y_new.append(y[alt])
+                    X_new.append(Li)
+
+        X_new = np.array(X_new)
+        y_new = np.array(y_new)
+        
+        return X_new, y_new
+        
 
 if __name__ == '__main__':
 
     artificial_intelligence = Artificial_intelligence()
 
     # artificial_intelligence.features_extraction() 
-    artificial_intelligence.features_extraction_segment(segment_width=10) 
+    artificial_intelligence.features_extraction_segment(segment_width=10) # generate features and labels 
 
+    X_train, y_train ,  X_test , y_test= artificial_intelligence.data_split() # use ExT2P1 data
 
-    X_train, y_train, X_test, y_test = artificial_intelligence.data_split()
-
-    LR = True
+    LR = False
     BR = False
     DT = False
-    RF = False
+    RF = True
     SVR_ = False
 
     choice = [LR, BR, DT, RF, SVR_]
@@ -228,6 +270,12 @@ if __name__ == '__main__':
     print("----------- {} -----------------".format(name))
 
     model.fit(X_train, y_train)
+# %%
+
+    # X_test , y_test = artificial_intelligence.load_E2T2P2_data(segment_width=10)
+    # X_test , y_test, indice_test = shuffle(X_test , y_test, range(y_test.shape[0])) # shuffle data
+    
+    
     mse_train = mean_squared_error(model.predict(X_train), y_train)
     mse_test = mean_squared_error(model.predict(X_test), y_test)
 
@@ -241,73 +289,68 @@ if __name__ == '__main__':
     
 
     y_pred_lr = model.predict(X_test)
-
-    fig, axes = plt.subplots(2,3)
-    axes = axes.flatten()
     
-    for i in range(6):
+    df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1), abs(y_test.reshape(-1,1)-y_pred_lr.reshape(-1,1))), axis=1))
 
-        X_test_i = X_test[i].reshape((13,10))
-
-        for j in range(13) :
-            axes[i].plot(X_test_i[j])
-
-        axes[i].set_xlabel("true {}, pred {}".format(y_pred_lr[i],y_test[i]))
-        axes[i].grid(True)
+    df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
 
 
-    plt.show()
-    
     #########################################################################
     # # #-------------------hyperparameters -----------------
     # artificial_intelligence.find_best_learning_params(clf, type=type)
     # clf.set_params(**artificial_intelligence.best_params)
     # # #-------------------
 
-    # fig, axes = plt.subplots(1,3, figsize=(10,20))
+    indices = [ ]
+    section = [ ]
+    pas = 0.5
+    alt_z_val = np.arange(4, 12+pas, pas)
+    
+    indice_test = range(X_test.shape[0])
+    for i in indice_test :
+        alt = int(i/(29*17)) # altitude
+        traj = int(i/29) % 17
+        
+        sec = i%29
+        indices.append(int(traj +1))
+        section.append(sec)
+        
+    indices = np.array(indices).reshape(-1,1)
+    section = np.array(section).reshape(-1,1)
+    
+   # %% 
+   # visualisation des erreurs sous forme de segments
 
-    # df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1)), axis=1))
+   
+    df = pd.DataFrame(np.concatenate((y_test.reshape(-1,1), y_pred_lr.reshape(-1,1), abs(y_test.reshape(-1,1)-y_pred_lr.reshape(-1,1)),  indices, section), axis=1))
+    df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
 
-    # df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir, 'test.csv'), header=False, index=False)
+    w1 = 80
+    w2 = 150
+    lines = [[(i, y_test[i]), (i, y_pred_lr[i])] for i in range(w1,w2)]
 
-    # axes = axes.flatten()
-    # axes[0].plot( y_pred_lr[:31], label="pred")
-    # axes[1].plot( y_test[:31], label="test")
-    # axes[2].plot( y_pred_lr[:31], label="pred")
-    # axes[2].plot( y_test[:31], label="test")
-    # axes[2].plot( y_test, label="test")
-    # axes[3].plot(y_pred_lr- y_test, label="test")
-
-    # plt.figure()
-    # plt.scatter(range(len(y_test[:30])), y_test[:30], label= "test")
-    # plt.scatter(range(len(y_test[:30])), y_pred_lr[:30], label= "pred")
-
-    # for i in range(30) :
-    #     plt.plot([i,i+1])
-
+    lc = mc.LineCollection(lines, linewidths=2)
+    fig, ax = pl.subplots()
+    ax.add_collection(lc)
+    ax.scatter(range(w1,w2), y_pred_lr[w1:w2], label= "pred", s=4, c='red')
+    ax.scatter(range(w1,w2), y_test[w1:w2], label= "label", s=4, c='black')
+    ax.autoscale()
+    ax.margins(0.1)
+    plt.title(" comparaison y_true et y_pred")
+    plt.xlabel(" echantillons ")
+    plt.ylabel(" alt(cm) ")
+    plt.legend()
+    plt.show()
+    
+# %% PLot the error
+    w1 = w1
+    w2 = w2
+    plt.figure()
+    plt.plot(np.abs(y_pred_lr-y_test)[w1:w2])
+    plt.title("valeur absolue de l'erreur")
+    plt.xlabel(" echantillons ")
+    plt.ylabel(" abs(ytest_ypred) ")
+    plt.legend()
+    plt.show()
 
 # %%
-    # visualisation des erreurs sous forme de segment
-    # w1 = 5000
-    # w2 = 5040
-    # lines = [[(i, y_test[i]), (i, y_pred_lr[i])] for i in range(w1,w2)]
-
-    # lc = mc.LineCollection(lines, linewidths=2)
-    # fig, ax = pl.subplots()
-    # ax.add_collection(lc)
-    # ax.scatter(range(w1,w2), y_pred_lr[w1:w2], label= "pred", s=4, c='red')
-    # ax.scatter(range(w1,w2), y_test[w1:w2], label= "label", s=4, c='black')
-    # ax.autoscale()
-    # ax.margins(0.1)
-    # plt.title(" comparaison y_true et y_pred")
-    # plt.xlabel(" echantillons ")
-    # plt.ylabel(" alt(cm) ")
-    # plt.legend()
-
-    # plt.figure()
-    # plt.plot(np.abs(y_pred_lr-y_test)[w1:w2])
-    # plt.title("valeur absolue de l'erreur")
-    # plt.xlabel(" echantillons ")
-    # plt.ylabel(" abs(ytest_ypred) ")
-    # plt.legend()
-    # plt.show()

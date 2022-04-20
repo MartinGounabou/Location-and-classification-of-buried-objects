@@ -1,4 +1,4 @@
-
+from binascii import a2b_base64
 from tkinter import *
 
 from data_manipulation_burried_object_localisation import Data_extraction
@@ -12,52 +12,51 @@ import os
 class IHM(Data_extraction):
     
     def __init__(self) -> None:
-       
         super().__init__(ESSAI=2, TEST=2)
         self.path_to_data = os.path.join(self.path_to_data_dir, 'data_all_z.csv')
-
-        self.z = [ 4 , 6, 8, 10, 12]
-
-    
+        self.alt_lits = list(np.arange(5,20.5,0.5))
+        self.read()
         print( " end loading data")
-        self.fenetre = Tk()
-        self.fenetre.title("IHM")
+        fenetre = Tk()
+        fenetre.title("IHM")
 
-       
+        fenetre.bind("<Escape>", quit)
+        fenetre.bind("x", quit)
+
         
         # fenetre.resizable(False, False)
 
         # Personnaliser la couleur de l'arrière-plan de la fenêtre principale
-        self.fenetre.config(bg = "#87CEEB")
-        self.fenetre.geometry("400x500")
+        fenetre.config(bg = "#87CEEB")
+        fenetre.geometry("400x500")
 
 
         # Création d'une fenêtre avec la classe Tk :
         # Création d'une barre de menu dans la fenêtre :
-        menu1 = Menu(self.fenetre)
+        menu1 = Menu(fenetre)
         menu1.add_cascade(label="Fichier")
         menu1.add_cascade(label="Options")
         menu1.add_cascade(label="Aide")
         
         
         # Configuration du menu dans la fenêtre
-        self.fenetre.config(menu = menu1)
+        fenetre.config(menu = menu1)
         # Affichage de la fenêtre créée :
         
-        cadre1 = Frame(self.fenetre)
+        cadre1 = Frame(fenetre)
         cadre1.place(x = 0,y =150,bordermode=OUTSIDE, height=40, width=100)
-        cadre2 = Frame(self.fenetre)
+        cadre2 = Frame(fenetre)
         cadre2.place(x = 100,y =150,bordermode=OUTSIDE, height=40, width=100)
-        cadre3 = Frame(self.fenetre)
+        cadre3 = Frame(fenetre)
         cadre3.place(x = 200,y =150,bordermode=OUTSIDE, height=40, width=100)
-        cadre4 = Frame(self.fenetre)
+        cadre4 = Frame(fenetre)
         cadre4.place(x = 300,y =150,bordermode=OUTSIDE, height=40, width=100)
         
         
-        texte1 = Label (self.fenetre, text= "affichage de graphe")
+        texte1 = Label (fenetre, text= "affichage de graphe")
 
-        bouton1 = Button (self.fenetre, text = "Display1", command=self.plot1)
-        bouton2 = Button (self.fenetre, text = "Display2", command=self.plot2)
+        bouton1 = Button (fenetre, text = "Display1", command=self.plot_graphe1)
+        bouton2 = Button (fenetre, text = "Display2", command=self.plot_graphe2)
         
         
         texte1.place(bordermode=OUTSIDE, height=40, width=400)
@@ -66,7 +65,7 @@ class IHM(Data_extraction):
         
         
         OptionList_pipe = range(1,4)
-        OptionList_alt = self.z
+        OptionList_alt = self.alt_lits
         OptionList_traj = range(1,18)
         OptionList_dipole =  self.dipole
         
@@ -98,12 +97,14 @@ class IHM(Data_extraction):
         opt4.config(width=30,height=40, font=('Helvetica', 12))
         opt4.pack(side=LEFT)
 
+        fenetre.mainloop()
+    
+    def quit(fenetre):
+        fenetre.destroy()
 
-
-    def read(self, num_z):
+    def read(self, z=5):
         
         data = pd.read_csv(self.path_to_data , header=None, index_col=None)
-
         self.X = data.iloc[:,:-2]
         self.y = data.iloc[:,-1] # array  of signal_shape
         signal_shape_array = data.iloc[:,-2] # array  of signal_shape
@@ -111,91 +112,71 @@ class IHM(Data_extraction):
         self.y = np.array(self.y, dtype=np.float64)
         self.signal_shape = np.array(signal_shape_array, dtype=np.int64)[0]
     
-        # # #     #------------------------features + window------------------
+        # #     #------------------------features + window------------------
         
         self.traj_num = 17
-        self.alt = self.X.shape
+        self.alt = 31
         self.dp_n = 13 # nombre de dipole
+        self.X = (self.X).reshape(self.traj_num, self.dp_n, self.signal_shape)
 
-        print(self.X.shape)
-        self.X = (self.X[num_z]).reshape(self.traj_num, self.dp_n, self.signal_shape)
+    def plot_graphe1(self):
 
-    def plot1(self):
+        plt.figure()
+
+        a = (self.alt_lits).index(float(self.variable2.get()))
+        b = int(self.variable3.get())-1
+        c =  self.dipole.index(int(self.variable4.get()))
+
+        self.read(z=float(self.variable2.get()))
+        
+        
+        print(float(self.variable2.get()))
+        print(a , b , c)
+
+        dp = self.X[b][c]
+        x = np.linspace(40,160,299)
+        
+        # plt.plot(X, Y,  label="dp{}".format(int(self.variable4.get())), linewidth=1)
+        plt.plot(x, dp,  label="dp{}".format(int(self.variable4.get())), linewidth=1)
 
 
-        traj =  int(self.variable3.get())-1
-        i = self.dipole.index(int(self.variable4.get()))
-        z = float(self.variable2.get())
-
-
-        print( z, traj, i)
-        self.read(self.z.index(z))
-
-
-        fig , ax = plt.subplots(1,2, figsize=(10,8))
-        ax = ax.flatten()
-
-        Y = list(self.X[traj][i])
-        lissage_dp = hlp.lissage(Y, 20)
-
-
-        ax[0].plot(np.linspace(40,160,300)[:-1],lissage_dp+3e4,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
-        print("plotting")
+        (plt.xlabel("time(s)"), plt.xlabel("Y(cm)"))
+        plt.ylabel("I_rms")
+        plt.title(" Traj : {}, alt : {}cm, pipe : {}".format(b, float(self.variable2.get()), 1))
         plt.grid()
-
-        self.plot_real_z(ax, [traj], [i], z =z )
-
-        plt.ion()
-        plt.show()
-
-    def plot2(self):
-
-
-        traj =  int(self.variable3.get())-1
-        z = float(self.variable2.get())
-
-        self.read(self.z.index(z))
-
-
-        fig , ax = plt.subplots(1,2, figsize=(10,8))
-        ax = ax.flatten()
-
-        for i in range(13) :
-            Y = list(self.X[traj][i])
-            lissage_dp = hlp.lissage(Y, 20)
-            ax[0].plot(np.linspace(40,160,300)[:-1],lissage_dp+3e4 ,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
-
-
-        self.plot_real_z(ax, [traj], range(13), z =z )
+        plt.legend()
 
         plt.ion()
         plt.show()
 
 
+    def plot_graphe2(self):
+        plt.figure()
 
-    def plot_real_z(self, ax,  num_traj_list, num_dipole_list, z =5):
+        a = (self.alt_lits).index(float(self.variable2.get()))
+        b = int(self.variable3.get())
+        c =  self.dipole.index(int(self.variable4.get()))
 
-        
-        traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
-        
-        for traj ,list_dipole in enumerate(traj_dipole_value) :
-            for i in num_dipole_list:
-                dp = list_dipole[i]
-                
-                x = dp[:, 0] 
+        for c in range(0,13) :
 
-                X, Y = hlp.integrale_derivee(x,dp[:, 1])
+            dp = self.X[a][b][c]
 
-                lissage_dp = hlp.lissage(list(Y), 20)
-                
-                ax[1].plot(X, lissage_dp ,  label="lissage_dp{}".format(self.dipole[i]), linewidth=1)
+            x = np.linspace(40,160,299)
+            
+            plt.plot(x, dp,  label="dp{}".format(self.dipole[c]), linewidth=1)
 
-
-            plt.title(" Traj : {}, alt : {}cm, pipe : {} ".format(num_traj_list[traj]+1, z, self.pipe))
+            (plt.xlabel("time(s)"), plt.xlabel("Y(cm)"))
+            plt.ylabel("I_rms")
+            plt.title(" Traj : {}, alt : {}cm, pipe : {}".format(b, float(self.variable2.get()), 1))
             plt.grid()
-          
+            plt.legend()
+
+        plt.ion()
+        plt.show()
+
+        return None                     
+    
 
 if __name__ == '__main__' :
     
     ihm = IHM()
-    ihm.fenetre.mainloop()

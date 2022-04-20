@@ -20,7 +20,7 @@ pd.options.display.max_colwidth = 600
 
 class Data_extraction:
 
-    def __init__(self, ESSAI=1, TEST=1) -> None:
+    def __init__(self, ESSAI=2, TEST=2) -> None:
 
         if (ESSAI == 1):
 
@@ -198,7 +198,7 @@ class Data_extraction:
             dp58 = data[1, :].reshape(1, 6)
             dp68 = data[1, :].reshape(1, 6)
 
-            for i in range(0, data.shape[0]):
+            for i in range(0, data.shape[0]): # a refaire plus propre avec pandas 
                 if data[i, 1] == 1.0 and data[i, 2] == 2.0:
                     dp12 = np.concatenate(
                         (dp12, data[i, :].reshape(1, 6)), axis=0)
@@ -450,6 +450,40 @@ class Data_extraction:
             plt.colorbar(orientation="horizontal",
                          fraction=0.07, anchor=(1.0, 0.0))
         plt.show()
+    def plot_altitude_echosondeur(self, list_num_traj, ech=True, axis_x=True) :
+
+        print(self.path_altitude_echosondeur)
+        list_traj_altitude = sorted(os.listdir(self.path_altitude_echosondeur))
+        
+
+        for e, i in enumerate(list_num_traj) :
+            # fig = plt.figure()
+            data_i = pd.read_csv(os.path.join(self.path_altitude_echosondeur, list_traj_altitude[i]), header=None, index_col=None, dtype="float64")
+            data_i = np.array(data_i.iloc[2:,:], dtype=np.float64)
+
+
+            tsec = [data_i[:, :4],data_i[self.ech_cut0[e]:self.ech_cutf[e], :4]][ech]@np.array([[3600],[60],[1],[1e-3]]) # equivalent a if ech=True : on ecahntillonne
+            altitude = (data_i[:, 4],data_i[self.ech_cut0[e]:self.ech_cutf[e], 4])[ech]                                    # elsee : on echantillonne pas
+
+            dist_y = (tsec - tsec[0])*self.v
+
+            x = (tsec, dist_y+14.5)[axis_x]
+
+            #-------------------- sauvegarde des donnees ---------------
+            if self.save_altitude_data :
+                if not os.path.exists(self.path_to_extracted):
+                    os.mkdir(self.path_to_extracted)
+
+                df_altitude = pd.DataFrame(np.concatenate((tsec, data_i[:,4].reshape(-1, 1)), axis=1))
+                df_altitude.to_csv(os.path.join(self.path_to_extracted,
+                        "trajec_altitude_{}_{}.csv".format(i, int(ech))), header=False, index=False)
+
+            #----------------------------------------------------------
+            # plt.plot(tsec, altitude, label="traj{}".format(i), linewidth=1)
+            plt.plot(x, altitude, ms = 1,label="traj{}".format(i), linewidth=1)
+            (plt.xlabel("time(s)"), plt.xlabel(" Y(cm) "))[axis_x]
+            plt.ylabel(" Altitude(cm) ")
+            plt.legend()
 
     def generate_data_for_interp(self):
        
@@ -469,15 +503,27 @@ class Data_extraction:
             
         elif essai == 2 :
 
-            for z in range(4,16,4):
+
+            # alt = range(4,16,4)
+            # for z in alt:
+            #     self.save_data_z(z=z)
+
+            # pas = 2
+            # alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
+    
+            # self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
+        
+            alt = range(4,14,2)
+            
+            for z in alt:
                 self.save_data_z(z=z)
 
-            pas = 2
+            pas = 0.5
             alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
-            alt = [4, 8, 12]
     
             self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
-        
+
+            
 def cubicinterpolation(x_val, x, y): 
     
     f = interpolate.CubicSpline(x, y)
@@ -491,22 +537,11 @@ def cubicinterpolation(x_val, x, y):
 if __name__ == '__main__':
 
     data_extraction = Data_extraction(ESSAI = 2, TEST=2)
-    # data_extraction = Data_extraction(ESSAI = 2, TEST=2)
-    
-    
+        
     # data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 10, axis_x=True)
     # plt.show()
     
     # interpolation
-    
     data_extraction.generate_data_for_interp()
-
-    # data_extraction = Data_extraction(ESSAIS = 1, TEST=2)
-
-
-    # interpolation
-
-    # data_extraction.generate_data_for_interp()
-    # data_extraction.plot_cartographie([1], z = 5)
 
 # %%
