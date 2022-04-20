@@ -2,6 +2,7 @@
 
 # ------Importation
 
+# %%
 from cmath import pi
 import matplotlib.pyplot as plt
 import os
@@ -314,7 +315,7 @@ class Data_extraction:
             # I_allz = np.interp(alt_z_val, alt_z, I_z)
             # signal_allz.append(I_allz)
 
-            I_allz = cubicinterpolation(alt_z_val, alt_z, I_z)
+            I_allz = hlp.cubicinterpolation(alt_z_val, alt_z, I_z)
             signal_allz.append(I_allz)
             
             
@@ -524,11 +525,7 @@ class Data_extraction:
             self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
 
             
-def cubicinterpolation(x_val, x, y): 
-    
-    f = interpolate.CubicSpline(x, y)
-    
-    return f(x_val)
+
 
        
 
@@ -536,12 +533,12 @@ def cubicinterpolation(x_val, x, y):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 2, TEST=2)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=1)
         
-    # data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 10, axis_x=True)
-    # plt.show()
+    data_extraction.plot_dipole_traji_dipolej(range(10), range(13), z = 45, axis_x=True)
+    plt.show()
     
     # interpolation
-    data_extraction.generate_data_for_interp()
+    # data_extraction.generate_data_for_interp()
 
 # %%
