@@ -172,8 +172,7 @@ class IHM(Data_extraction):
         plt.show()
 
     def plot_real_z(self, ax, num_traj_list, num_dipole_list, z =5):
-
-        
+  
         traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
         for traj ,list_dipole in enumerate(traj_dipole_value) :
             for i in num_dipole_list:
@@ -194,6 +193,6 @@ class IHM(Data_extraction):
 
 if __name__ == '__main__' :
     
-    # fiability de la regression sur le E2T2 alts = 6, 10
+    # fiabilite de la regression sur le E2T2 alts = 6, 10
     ihm = IHM()
     ihm.fenetre.mainloop()
