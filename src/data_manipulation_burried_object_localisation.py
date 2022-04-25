@@ -16,7 +16,8 @@ import utils.augmentation as aug
 import utils.helper as hlp
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
-
+import seaborn as sns
+    
 pd.options.display.max_colwidth = 600
 
 
@@ -320,9 +321,12 @@ class Data_extraction:
             
         
             
-            traj_dipole_value.append(
-                [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
+            # traj_dipole_value.append(
+            #     [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
  
+ 
+            traj_dipole_value.append(
+                 [dp13]) 
         # --------echantillonnage
         min_signal_shape = min(signal_shape)
 
@@ -487,16 +491,18 @@ class Data_extraction:
                 # Moyenne glissante
                 lissage_dp = hlp.lissage(list(Y), 20)
 
-                plt.scatter(X, lissage_dp,  s=1, label="lissage_dp{}".format(
+                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
                     self.dipole[i]), linewidth=1)
+                
+                sns.set()
 
             choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
                       [self.TEST - 1]))[axis_x]
             plt.xlabel(choice)
             plt.ylabel("I_rms")
-            plt.title(" Traj : {}, alt : {}cm, pipe : {} ".format(
+            plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
                 num_traj_list[traj]+1, z, self.pipe))
-            plt.grid()
+            # plt.grid()
             plt.legend()
 
         # plt.show()
@@ -645,14 +651,14 @@ class Data_extraction:
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 1, TEST=2, PIPE=1)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=1)
         
-    # data_extraction.plot_dipole_traji_dipolej(range(1), range(13), z = 4)
+    # data_extraction.plot_dipole_traji_dipolej(range(3), range(13), z = None)
     # plt.show()
-    data_extraction.plot_cartographie_v2(range(13), z = 5)
+    # data_extraction.plot_cartographie_v2(range(13), z = 5)
     
     # interpolation
-    # data_extraction.generate_data_for_interp()
+    data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
 
 # %%

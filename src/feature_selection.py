@@ -4,6 +4,7 @@
 from hashlib import sha1
 from pyexpat.errors import XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF
 from statistics import mode
+from tkinter.tix import Tree
 from xmlrpc.client import FastUnmarshaller
 from data_manipulation_burried_object_localisation import Data_extraction
 import numpy as np
@@ -13,6 +14,7 @@ import os
 import matplotlib.pyplot as plt
 from scipy import integrate
 import numpy as np
+import  seaborn as sns
 import pylab as pl
 from matplotlib import collections as mc
 from collections import OrderedDict
@@ -38,7 +40,7 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
-        
+from sklearn.inspection import permutation_importance
 # --------------- utils
 
 import utils.augmentation as aug
@@ -188,10 +190,10 @@ if __name__ == '__main__':
     X_train, y_train,  X_test, y_test = artificial_intelligence.data_split()  # use ExT2P1 data
 
 
-    LR = True
+    LR = False
     BR = False
     DT = False
-    RF = False
+    RF = True
     SVR_ = False
     KNR = False
     GB = False
@@ -212,8 +214,14 @@ if __name__ == '__main__':
     model.fit(X_train, y_train)
 
     imp = []
-    importance = model.coef_
-    # importance = model.feature_importances_
+    # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 27]
+    # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 12, 27]
+    # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 12, 27, 37, 45, 58]
+    dipole = [12]
+    
+    
+    # importance = model.coef_
+    importance = model.feature_importances_
     # summarize feature importance
     # for i,v in enumerate(importance):
         # print('Feature: %0d, Score: %.5f' % (i,v))
@@ -227,7 +235,7 @@ if __name__ == '__main__':
         imp.append(v)   
         
     features = [  ]
-    for i in artificial_intelligence.dipole :
+    for i in dipole :
         features.append(f"dp{i}")
           
     # plot feature importance
@@ -235,9 +243,17 @@ if __name__ == '__main__':
     dict_feature1 = dict(zip(features, imp))
     dict_feature2 = OrderedDict(sorted(dict_feature1.items(), key=lambda t: t[1]))
     
-    plt.bar(dict_feature2.keys(), dict_feature2.values())
-    plt.show()
+    # plt.bar(dict_feature2.keys(), dict_feature2.values())
+    
+    
+    zipped = list(zip(dict_feature2.keys(), dict_feature2.values()))
+    df = pd.DataFrame(zipped, columns=['features', 'importances'])
+    
+    sns.barplot(x='features', y='importances', data=df)
+    # sns.set()
+    
 
+    # summarize feature importance
     mse_train = mean_squared_error(model.predict(X_train), y_train)
     mse_test = mean_squared_error(model.predict(X_test), y_test)
 
@@ -252,6 +268,7 @@ if __name__ == '__main__':
     y_pred_lr = model.predict(X_test)
 
 
+    plt.show()
 
     #########################################################################
     # %%
