@@ -1,11 +1,11 @@
 # %%
 
 
-from hashlib import sha1
-from pyexpat.errors import XML_ERROR_ATTRIBUTE_EXTERNAL_ENTITY_REF
-from statistics import mode
+
+from doctest import FAIL_FAST
 from tkinter.tix import Tree
-from xmlrpc.client import FastUnmarshaller
+from sklearn import tree
+from sympy import trunc
 from data_manipulation_burried_object_localisation import Data_extraction
 import numpy as np
 import scipy as sp
@@ -52,7 +52,7 @@ class Artificial_intelligence(Data_extraction):
     def __init__(self) -> None:
         super().__init__(ESSAI=2, TEST=2)
         self.path_to_data = os.path.join(
-            self.path_to_data_dir, 'data_all_z_dp13.csv')
+            self.path_to_data_dir, 'data_all_z_dp1.csv')
         self.path_to_features = os.path.join(
             self.path_to_data_dir, "features.csv")
         self.path_to_labels = os.path.join(self.path_to_data_dir, "labels.csv")
@@ -214,13 +214,15 @@ if __name__ == '__main__':
     model.fit(X_train, y_train)
 
     imp = []
-    # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 27]
-    # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 12, 27]
+ 
     # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 12, 27, 37, 45, 58]
+    # dipole = [13, 18, 38, 28, 12, 27, 37, 45, 58]
+    # dipole = [38, 27, 37, 45, 58]
+    # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 27, 37, 45,58]
+    # dipole = [13, 18, 38, 12 , 27, 58]
     dipole = [12]
     
-    
-    # importance = model.coef_
+    # importance = abs(model.coef_)
     importance = model.feature_importances_
     # summarize feature importance
     # for i,v in enumerate(importance):
@@ -250,8 +252,6 @@ if __name__ == '__main__':
     df = pd.DataFrame(zipped, columns=['features', 'importances'])
     
     sns.barplot(x='features', y='importances', data=df)
-    # sns.set()
-    
 
     # summarize feature importance
     mse_train = mean_squared_error(model.predict(X_train), y_train)
@@ -260,11 +260,13 @@ if __name__ == '__main__':
     mae_train = mean_absolute_error(model.predict(X_train), y_train)
     mae_test = mean_absolute_error(model.predict(X_test), y_test)
 
-    print(" R carre  {}".format(model.score(X_test, y_test)))
+    r_carre = model.score(X_test, y_test)
+    print(" R carre  {}".format(r_carre))
     print()
-    print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(
+    print("mse_train {}, mse_test {}, mae_train {}, mae_test {} ".format(
         mse_train, mse_test, mae_train, mae_test))
 
+    plt.title( f"nombre de dipoles {len(dipole)} ; Modèle : {name} \n r_carre: {r_carre:.3f} mse_train: {mse_train:.3f}, mse_test: {mse_test:.3f}, mae_train {mae_train:.3f}, mae_test: {mae_test:.3f}")
     y_pred_lr = model.predict(X_test)
 
 

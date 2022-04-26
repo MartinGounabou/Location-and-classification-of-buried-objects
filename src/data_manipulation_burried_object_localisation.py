@@ -317,16 +317,17 @@ class Data_extraction:
             
             
             # traj_dipole_value.append(
-            #     [dp13, dp16, dp36, dp18, dp38, dp68, dp26, dp28, dp12, dp27, dp37, dp45, dp58])
-            
-        
+            #     [dp13, dp16, dp36, dp18, dp38, dp68, dp26, dp28 , dp12 , dp27, dp37, dp45, dp58])
             
             # traj_dipole_value.append(
-            #     [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
- 
- 
+            #     [dp12])
+            
             traj_dipole_value.append(
-                 [dp13]) 
+                [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
+ 
+ 
+            # traj_dipole_value.append(
+            #      [dp13]) 
         # --------echantillonnage
         min_signal_shape = min(signal_shape)
 
@@ -471,9 +472,10 @@ class Data_extraction:
     def plot_dipole_traji_dipolej(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
 
         traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
-
+    
         for traj, list_dipole in enumerate(traj_dipole_value):
             fig = plt.figure()
+
             for i in num_dipole_list:
 
                 dp = list_dipole[i]
@@ -491,9 +493,11 @@ class Data_extraction:
                 # Moyenne glissante
                 lissage_dp = hlp.lissage(list(Y), 20)
 
-                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                    self.dipole[i]), linewidth=1)
-                
+                plt.plot(X, Y, label="dp sans filtre{}".format(
+                self.dipole[i]), linewidth=1)   
+
+                  # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                #     self.dipole[i]), linewidth=1)              
                 sns.set()
 
             choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
@@ -503,7 +507,7 @@ class Data_extraction:
             plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
                 num_traj_list[traj]+1, z, self.pipe))
             # plt.grid()
-            plt.legend()
+            # plt.legend()
 
         # plt.show()
 
@@ -651,14 +655,14 @@ class Data_extraction:
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=1)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=1, PIPE=None)
         
-    # data_extraction.plot_dipole_traji_dipolej(range(3), range(13), z = None)
-    # plt.show()
+    data_extraction.plot_dipole_traji_dipolej(range(12), range(13), z = 25)
+    plt.show()
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
     
     # interpolation
-    data_extraction.generate_data_for_interp()
+    # data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
 
 # %%

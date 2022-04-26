@@ -2,7 +2,8 @@
 
 
 from statistics import mode
-from xmlrpc.client import FastUnmarshaller
+from tkinter.tix import Tree
+from xmlrpc.client import TRANSPORT_ERROR, FastUnmarshaller
 from data_manipulation_burried_object_localisation import Data_extraction
 import numpy as np
 import scipy as sp
@@ -164,8 +165,6 @@ class Artificial_intelligence(Data_extraction):
 
         return X_train, y_train, X_test, y_test
 
-   
-
     def find_best_learning_params(self, model, type='LR'):
 
             X_train, y_train, _, _ = self.data_split()
@@ -247,7 +246,7 @@ class Artificial_intelligence(Data_extraction):
             # ---------------------------------------
 
             cv = GridSearchCV(model, param_grid=hyper_param_grid,
-                            cv=2, n_jobs=-1, verbose=2)
+                            cv=3, n_jobs=-1, verbose=2)
 
             cv.fit(X_train, y_train)
 
@@ -309,6 +308,7 @@ class Artificial_intelligence(Data_extraction):
 
         return X_new, y_new
 
+# %%
 
 if __name__ == '__main__':
 
@@ -319,6 +319,7 @@ if __name__ == '__main__':
         segment_width=10)  # generate features and labels
 
     X_train, y_train,  X_test, y_test = artificial_intelligence.data_split()  # use ExT2P1 data
+# %%
 
     LR = False
     BR = False
@@ -327,7 +328,7 @@ if __name__ == '__main__':
     SVR_ = False
     KNR = False
     GB = False
-    ET = False
+    ET = True
     Lo = False
     Ri = False
 
@@ -341,11 +342,11 @@ if __name__ == '__main__':
 
     print("----------- {} -----------------".format(name))
     # # #-------------------hyperparameters -----------------
-    artificial_intelligence.find_best_learning_params(model, type=name)
-    model.set_params(**artificial_intelligence.best_params)
+    # artificial_intelligence.find_best_learning_params(model, type=name)
+
+    # model.set_params(**artificial_intelligence.best_params)
 
     model.fit(X_train, y_train)
-# %%
 
     # X_test , y_test = artificial_intelligence.load_E2T2P2_data(segment_width=10)
     # X_test , y_test, indice_test = shuffle(X_test , y_test, range(y_test.shape[0])) # shuffle data
@@ -364,6 +365,7 @@ if __name__ == '__main__':
 
     y_pred_lr = model.predict(X_test)
 
+# %%
     df = pd.DataFrame(np.concatenate((y_test.reshape(-1, 1), y_pred_lr.reshape(-1, 1),
                       abs(y_test.reshape(-1, 1)-y_pred_lr.reshape(-1, 1))), axis=1))
 
@@ -372,7 +374,7 @@ if __name__ == '__main__':
 
     #########################################################################
     # # #-------------------
-
+'''
     indices = []
     section = []
     pas = 0.5
@@ -425,5 +427,5 @@ if __name__ == '__main__':
     plt.ylabel(" abs(ytest_ypred) ")
     plt.legend()
     plt.show()
-
+'''
 # %%
