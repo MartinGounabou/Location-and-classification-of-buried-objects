@@ -77,8 +77,8 @@ class Data_extraction:
                              "TOF Test2 - Alt = 5cm\Pipe 2 - BO = 10 cm",
                              "TOF Test2 - Alt = 5cm\Pipe 3 - BO = 20 cm")[self.pipe - 1]
                 
-                
-                self.path_altitude_echosondeur = os.path.join(os.path.split(self.path)[0], 'TOF', pipe_path )
+                split1, split2 = pipe_path.split('\\')
+                self.path_altitude_echosondeur = os.path.join(os.path.split(self.path)[0], "TOF", split1, split2)
    
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -595,7 +595,6 @@ class Data_extraction:
         
     def plot_altitude_echosondeur(self, list_num_traj, ech=True, axis_x=True) :
 
-        print(self.path_altitude_echosondeur)
         list_traj_altitude = sorted(os.listdir(self.path_altitude_echosondeur))
         
 
@@ -671,7 +670,6 @@ class Data_extraction:
         
         all_data = []
         all_traj = sorted(os.listdir(self.path_altitude_echosondeur), key=hlp.key_data)
-        
         for traj in all_traj:
             
             data = pd.read_csv(os.path.join(
