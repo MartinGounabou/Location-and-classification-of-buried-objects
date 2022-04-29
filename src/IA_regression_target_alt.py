@@ -14,7 +14,7 @@ from scipy import integrate
 import numpy as np
 import pylab as pl
 from matplotlib import collections as mc
-
+import pickle
 
 # ______________sckitlearn
 
@@ -48,6 +48,7 @@ class Artificial_intelligence(Data_extraction):
         self.path_to_features = os.path.join(
             self.path_to_data_dir, "features.csv")
         self.path_to_labels = os.path.join(self.path_to_data_dir, "labels.csv")
+        self.path_to_models = os.path.join(os.getcwd(), "model")
 
     def features_extraction(self):
 
@@ -230,8 +231,7 @@ class Artificial_intelligence(Data_extraction):
 
                 hyper_param_grid = {
                     'alpha':[0.02, 0.024, 0.025, 0.026, 0.03],
-                
-            
+
                 }
             
             elif type == 'Ri':
@@ -256,7 +256,7 @@ class Artificial_intelligence(Data_extraction):
         
     def load_E2T2P2_data(self, segment_width=10):
 
-        path = os.path.join(self.path_to_data_dir, 'data_all_z_pipe2.csv')
+        path = os.path.join(self.path_to_data_dir, 'data_all_z_pipe2_dp13.csv')
 
         data = pd.read_csv(path, header=None, index_col=None)
 
@@ -307,7 +307,9 @@ class Artificial_intelligence(Data_extraction):
         y_new = np.array(y_new)
 
         return X_new, y_new
+    
 
+    
 # %%
 
 if __name__ == '__main__':
@@ -348,33 +350,49 @@ if __name__ == '__main__':
 
     model.fit(X_train, y_train)
 
-    # X_test , y_test = artificial_intelligence.load_E2T2P2_data(segment_width=10)
-    # X_test , y_test, indice_test = shuffle(X_test , y_test, range(y_test.shape[0])) # shuffle data
+    X_test , y_test = artificial_intelligence.load_E2T2P2_data(segment_width=10)
+    X_test , y_test, indice_test = shuffle(X_test , y_test, range(y_test.shape[0])) # shuffle data
 
+    r_carre = model.score(X_test, y_test)
     mse_train = mean_squared_error(model.predict(X_train), y_train)
     mse_test = mean_squared_error(model.predict(X_test), y_test)
 
     mae_train = mean_absolute_error(model.predict(X_train), y_train)
     mae_test = mean_absolute_error(model.predict(X_test), y_test)
 
-    print(" R carre  {}".format(model.score(X_test, y_test)))
+    print(" R carre  {}".format(r_carre))
     print()
 
     print("mse_train {}, mse_test {}, mae_train {}, mae_test{} ".format(
         mse_train, mse_test, mae_train, mae_test))
 
     y_pred_lr = model.predict(X_test)
+    
 
-# %%
+# # Save model 
+#     model_filename = os.path.join(artificial_intelligence.path_to_models, f"{name}_model.sav")
+
+#     saved_model = pickle.dump(model, open(model_filename,'wb'))
+
+    # df = pd.DataFrame(np.concatenate((X_test, y_pred_lr.reshape(-1, 1)), axis=1))
+
+    # df.to_csv(os.path.join(artificial_intelligence.path_to_models,
+    #           'test_data.csv'), header=False, index=False)
+#     print('Model is saved into to disk successfully Using Pickle')
+  
+
     df = pd.DataFrame(np.concatenate((y_test.reshape(-1, 1), y_pred_lr.reshape(-1, 1),
                       abs(y_test.reshape(-1, 1)-y_pred_lr.reshape(-1, 1))), axis=1))
 
     df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir,
               'test.csv'), header=False, index=False)
-
+    
+    
+    print(np.argmax( abs(y_test.reshape(-1, 1)-y_pred_lr.reshape(-1, 1))))
+ 
+'''             
     #########################################################################
     # # #-------------------
-'''
     indices = []
     section = []
     pas = 0.5

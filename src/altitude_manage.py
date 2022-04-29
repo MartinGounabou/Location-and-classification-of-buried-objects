@@ -3,6 +3,7 @@
 # ------Importation
 
 # %%
+from asyncio.windows_utils import pipe
 from cmath import pi
 import matplotlib.pyplot as plt
 import os
@@ -18,7 +19,11 @@ import utils.helper as hlp
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 import seaborn as sns
-    
+
+from matplotlib.ticker import LinearLocator
+from matplotlib import cm
+from scipy.interpolate import RectBivariateSpline
+
 pd.options.display.max_colwidth = 600
 
 
@@ -77,8 +82,8 @@ class Data_extraction:
                              "TOF Test2 - Alt = 5cm\Pipe 2 - BO = 10 cm",
                              "TOF Test2 - Alt = 5cm\Pipe 3 - BO = 20 cm")[self.pipe - 1]
                 
-                split1, split2 = pipe_path.split('\\')
-                self.path_altitude_echosondeur = os.path.join(os.path.split(self.path)[0], "TOF", split1, split2)
+                
+                self.path_altitude_echosondeur = os.path.join(os.path.split(self.path)[0], 'TOF', pipe_path )
    
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -233,9 +238,9 @@ class Data_extraction:
                     dp = np.concatenate(
                         (x_val.reshape(-1, 1), y_val.reshape(-1, 1)), axis=1)
                     list_dp.append(dp)
-
                 values_cut.append(list_dp)
 
+    
             return values_cut
 
         traj_dipole_value = []
@@ -345,13 +350,11 @@ class Data_extraction:
         # traj_dipole_value = echantillonnage(traj_dipole_value, min_signal_shape)
 
         # --------interpolation
-        x_val = [np.linspace(0, 460, 1064), np.linspace(
-            0, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+        x_val = [np.linspace(40, 460, 1064), np.linspace(
+            40, 150, 300), np.linspace(5, 50, 432)][self.TEST - 1]
 
         traj_dipole_value = cutting(traj_dipole_value, x_val)
         
-        # ---------------------
-
         # plt.plot((dp13[:,0]-dp13[0,0])*self.v*1e-3, dp13[:,5])
         
         # plt.show()
@@ -366,7 +369,8 @@ class Data_extraction:
         num_traj = len(traj_dipole_value)
 
         num_dipole = len(traj_dipole_value[0])
-        signal_shape = traj_dipole_value[0][0].shape[0]-1
+        # signal_shape = traj_dipole_value[0][0].shape[0]-1
+        signal_shape = traj_dipole_value[0][0].shape[0]
 
         print("signal shape  : ", signal_shape)
         print("Nombre de trajectoire   : ", num_traj)
@@ -377,8 +381,8 @@ class Data_extraction:
         for i, data_traj in enumerate(traj_dipole_value):
             dp = np.array([])
             for data_dp in data_traj:
-                _, integrale_derivee_I = hlp.integrale_derivee(
-                    data_dp[:, 0], data_dp[:, 1])
+                integrale_derivee_I = data_dp[:, 1] - data_dp[0, 1]
+                
                 # integrale_derivee_I = data_dp[1:, 1]   
                 
                 dp = np.concatenate((dp, integrale_derivee_I))
@@ -414,8 +418,7 @@ class Data_extraction:
 
             I_allz = hlp.cubicinterpolation(alt_z_val, alt_z, I_z)
             signal_allz.append(I_allz)
-            
-            
+                        
         # signal pour toutes les altitudes
         return np.array(signal_allz, dtype=np.float64).T
 
@@ -469,7 +472,7 @@ class Data_extraction:
             os.mkdir(self.path_to_data_dir)
 
         df.to_csv(os.path.join(self.path_to_data_dir,
-                  "data_all_z_pipe2_dp{}.csv".format(self.dp_n)), header=False, index=False)
+                  "data_all_z_pipe_{}.csv".format(self.pipe)), header=False, index=False)
 
         # fig, axes = plt.subplots(3,2, figsize=(15,12))
         # axes = axes.flatten()
@@ -595,6 +598,7 @@ class Data_extraction:
         
     def plot_altitude_echosondeur(self, list_num_traj, ech=True, axis_x=True) :
 
+        print(self.path_altitude_echosondeur)
         list_traj_altitude = sorted(os.listdir(self.path_altitude_echosondeur))
         
 
@@ -641,14 +645,12 @@ class Data_extraction:
             self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
 
             
-            
         elif essai == 2 :
 
 
             # alt = range(4,16,4)
             # for z in alt:
             #     self.save_data_z(z=z)
-
             # pas = 2
             # alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
     
@@ -659,17 +661,17 @@ class Data_extraction:
             for z in alt:
                 self.save_data_z(z=z)
 
-            pas = 0.5
+            pas = 2
             alt_z_val = np.arange(4, 12+pas, pas) # TEST 2 ESSAI 2
     
             self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
             
             
     def extract_alt(self):
-        
-        
+                
         all_data = []
         all_traj = sorted(os.listdir(self.path_altitude_echosondeur), key=hlp.key_data)
+        
         for traj in all_traj:
             
             data = pd.read_csv(os.path.join(
@@ -679,38 +681,51 @@ class Data_extraction:
             data.drop_duplicates(inplace=True)
             data = np.array(data, dtype=np.float64)
             
-            x_val, y_val  = interpolation_alt(np.linspace(0, 157, 300), data)
+            x_val, y_val  = interpolation_alt(np.linspace(40, 150, 300), data)
+            
+            y_val = filters.gaussian_filter1d(y_val,sigma=5)
             all_data.append(y_val)
-
+            
+            
+        df =  pd.DataFrame(np.array(all_data))
+        print(df.shape)
+        df.to_csv(os.path.join(self.path_to_data_dir,
+         "alt.csv"), header=False, index=False)
+        
         return all_data
 
 def interpolation_alt(x_val, alt) : 
         
-    dist_y = (alt[:,0] - alt[0,0])*3e-3 
-    y_val = np.interp(x_val, dist_y, alt[:, 2])
+    dist_y = (alt[:,0] - alt[0,0])*4e-3 
+    y_val = np.interp(x_val, dist_y, alt[:, 2])*1e-1
         
     return x_val, y_val
+
+
+
 
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=1)
     
-    x = np.linspace(0, 157, 300)
-    i = 7
     
-    alt = data_extraction.extract_alt()[i]
+    data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=2)
+    
+    # alt = data_extraction.extract_alt()
+    
+    # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
-    y = alt
+    # # Make data.
+    # x = np.array([0,5,10,15,17,19,21,23,25,27,29,31,33,35,40,45,50])
+    # y = np.linspace(40, 150, 300)
+    # X, Y = np.meshgrid(y, x)
+    # Z = np.array(alt).reshape((17,300))
     
-    fx = filters.gaussian_filter1d(y,sigma=5)
-    plt.plot(x, y, label = "raw")
-    plt.plot(x, fx, label="smooth")
-    plt.legend()
+    # ax.plot_surface(X, Y, Z)
 
-    data_extraction.plot_dipole_traji_dipolej([i], range(1), z = 4)
+    # data_extraction.plot_dipole_traji_dipolej([i], range(1), z = 4)
     
-    plt.show()
+    # plt.show()
     
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
     

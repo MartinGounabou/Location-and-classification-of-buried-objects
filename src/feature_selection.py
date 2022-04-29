@@ -52,7 +52,7 @@ class Artificial_intelligence(Data_extraction):
     def __init__(self) -> None:
         super().__init__(ESSAI=2, TEST=2)
         self.path_to_data = os.path.join(
-            self.path_to_data_dir, 'data_all_z_dp1.csv')
+            self.path_to_data_dir, 'data_all_z_dp13.csv')
         self.path_to_features = os.path.join(
             self.path_to_data_dir, "features.csv")
         self.path_to_labels = os.path.join(self.path_to_data_dir, "labels.csv")
@@ -193,11 +193,11 @@ if __name__ == '__main__':
     LR = False
     BR = False
     DT = False
-    RF = True
+    RF = False
     SVR_ = False
     KNR = False
     GB = False
-    ET = False
+    ET = True
     Lo = False
     Ri = False
 
@@ -220,7 +220,8 @@ if __name__ == '__main__':
     # dipole = [38, 27, 37, 45, 58]
     # dipole = [13, 16, 36, 18, 38, 68, 26, 28, 27, 37, 45,58]
     # dipole = [13, 18, 38, 12 , 27, 58]
-    dipole = [12]
+    # dipole = [12]
+    dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
     
     # importance = abs(model.coef_)
     importance = model.feature_importances_
