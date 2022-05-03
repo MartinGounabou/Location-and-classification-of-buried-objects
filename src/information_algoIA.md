@@ -26,8 +26,3 @@ En sortie, l'algorithme nous donnera l'altitude à laquelle on se trouve.
 Il aura peut être des problèmes de compatibilité car le modèle a été developpé sur du 64 bits et sera tester apparamment sur du 32bits mais à voir ...
 
 
-
-
-Modeles trajectoires, donnees altimetre
-Modeles entraine sur des donnees sans pipe   et tester sur des trajectoires avec pipe 
-il faut utiliser l'integrale derivee car l'offset a chaque debut est different 

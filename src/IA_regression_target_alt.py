@@ -42,9 +42,9 @@ import utils.helper as hlp
 class Artificial_intelligence(Data_extraction):
 
     def __init__(self) -> None:
-        super().__init__(ESSAI=2, TEST=2)
+        super().__init__(ESSAI=2, TEST=2, PIPE=1)
         self.path_to_data = os.path.join(
-            self.path_to_data_dir, 'data_all_z_dp13.csv')
+            self.path_to_data_dir, 'data_all_z_pipe_{}.csv'.format(self.pipe))
         self.path_to_features = os.path.join(
             self.path_to_data_dir, "features.csv")
         self.path_to_labels = os.path.join(self.path_to_data_dir, "labels.csv")
@@ -350,8 +350,8 @@ if __name__ == '__main__':
 
     model.fit(X_train, y_train)
 
-    X_test , y_test = artificial_intelligence.load_E2T2P2_data(segment_width=10)
-    X_test , y_test, indice_test = shuffle(X_test , y_test, range(y_test.shape[0])) # shuffle data
+    # X_test , y_test = artificial_intelligence.load_E2T2P2_data(segment_width=10)
+    # X_test , y_test, indice_test = shuffle(X_test , y_test, range(y_test.shape[0])) # shuffle data
 
     r_carre = model.score(X_test, y_test)
     mse_train = mean_squared_error(model.predict(X_train), y_train)
@@ -370,9 +370,9 @@ if __name__ == '__main__':
     
 
 # # Save model 
-#     model_filename = os.path.join(artificial_intelligence.path_to_models, f"{name}_model.sav")
+    model_filename = os.path.join(artificial_intelligence.path_to_models, f"{name}_model.sav")
 
-#     saved_model = pickle.dump(model, open(model_filename,'wb'))
+    saved_model = pickle.dump(model, open(model_filename,'wb'))
 
     # df = pd.DataFrame(np.concatenate((X_test, y_pred_lr.reshape(-1, 1)), axis=1))
 

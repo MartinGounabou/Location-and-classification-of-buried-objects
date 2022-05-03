@@ -386,7 +386,7 @@ class Data_extraction:
 
         # y  =  np.array([0]*5 + [1]*8 + [0]*4).reshape((num_traj,1))
         if self.TEST == 1:
-            y = np.array([0]*5 + [1]*8 + [0]*4).reshape((num_traj, 1))
+            y = np.array([0]*5 + [1]*8 + [0]*4).reshape((num_traj, 1)) # a revoir 
         elif self.TEST == 2:
             y = np.array([0]*5 + [1]*8 + [0]*4).reshape((num_traj, 1))
 
@@ -700,7 +700,9 @@ if __name__ == '__main__':
 
     data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=2)
     
-    alt = data_extraction.extract_alt()
+    # alt = data_extraction.extract_alt()
+    
+    
     # x = np.linspace(40, 150, 300)
     # y = alt[1]
     
@@ -708,8 +710,8 @@ if __name__ == '__main__':
     # plt.plot(x, y)
     # plt.plot(x, fx)
 
-    # data_extraction.plot_dipole_traji_dipolej(range(2), range(1), z = 4)
-    # plt.show()
+    data_extraction.plot_dipole_traji_dipolej(range(2), range(1), z = 4)
+    plt.show()
     
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
     

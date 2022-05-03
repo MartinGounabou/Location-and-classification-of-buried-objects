@@ -270,8 +270,6 @@ if __name__ == '__main__':
     plt.title( f"nombre de dipoles {len(dipole)} ; Modèle : {name} \n r_carre: {r_carre:.3f} mse_train: {mse_train:.3f}, mse_test: {mse_test:.3f}, mae_train {mae_train:.3f}, mae_test: {mae_test:.3f}")
     y_pred_lr = model.predict(X_test)
 
-
     plt.show()
-
     #########################################################################
     # %%
