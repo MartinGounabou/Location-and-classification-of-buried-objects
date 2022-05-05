@@ -3,8 +3,7 @@
 # ------Importation
 
 # %%
-from asyncio.windows_utils import pipe
-from cmath import pi
+
 import matplotlib.pyplot as plt
 import os
 import scipy.ndimage.filters as filters
@@ -58,7 +57,7 @@ class Data_extraction:
                 self.traj = 3
                 self.pipe = PIPE
                 
-            self.v = 4
+            self.v_squid = 4
             self.path_altitude_echosondeur = os.path.join(
                 self.path, "Pipe 1 - BO = 1 cm/Echosondeur/Test2-Pipe1(BO=1cm)")
 
@@ -71,6 +70,9 @@ class Data_extraction:
                 self.traj = 13
                 self.pipe = PIPE
 
+                self.path_altitude_echosondeur = os.path.join(os.path.split(self.path)[0], 'TOF\TOF Test1 - Alt = 5cm - Vit = 3 cm_s' )
+                self.v_opt = 3
+                
             elif TEST == 2:
                 self.path = os.path.abspath(
                     "../Datasets/ESSAIS 2/Tests Sol Ratissé - 3 BO/TEST 2")
@@ -84,7 +86,8 @@ class Data_extraction:
                 
                 
                 self.path_altitude_echosondeur = os.path.join(os.path.split(self.path)[0], 'TOF', pipe_path )
-   
+                self.v_opt = 4
+                
             elif TEST == 3:
                 self.path = os.path.abspath(
                     "../Datasets/ESSAIS 2/Tests Sol Ratissé - 3 BO/TEST 3")
@@ -92,7 +95,7 @@ class Data_extraction:
                 self.traj = 3
                 self.pipe = PIPE
                 
-            self.v = 4
+            self.v_squid = 4
 
         print(" ESSAI {} and TEST {} ".format(ESSAI, TEST))
 
@@ -108,11 +111,15 @@ class Data_extraction:
                          477, 468, 482, 471, 495, 481, 479, 474, 488, 471]
         self.dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
 
+        self.traj_case = {"pipe" : range(5,10),
+                          "no_pipe" : list(range(2))+list(range(15,17)),
+                          "all_traj" : range(self.traj), 
+                            }
         
-        # self.TRAJ_SELECT = list(range(2))+list(range(15,17))
-        self.TRAJ_SELECT = range(5,10)
-        # self.TRAJ_SELECT = range(17)
+      
+        self.index_traj = list(self.traj_case.keys())[2]
         
+
     # [data1, data2, data3 ... data_tejnum]
 
     def extract_data_frome_file(self, z, verbose=False):
@@ -227,17 +234,17 @@ class Data_extraction:
                     tsec = data_dp[:, 0]*1e-3
 
                     if self.TEST == 2:
-                        dist_y = (tsec - tsec[0])*self.v
+                        dist_y = (tsec - tsec[0])*self.v_squid
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
              
              
                     elif self.TEST == 1:
-                        dist_y = (tsec - tsec[0])*self.v
+                        dist_y = (tsec - tsec[0])*self.v_squid
                         
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
                         
                     elif self.TEST == 3:
-                        dist_y = (tsec - tsec[0])*self.v
+                        dist_y = (tsec - tsec[0])*self.v_squid
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
                         
                     dp = np.concatenate(
@@ -356,74 +363,17 @@ class Data_extraction:
 
         # --------interpolation
         x_val = [np.linspace(40, 460, 1064), np.linspace(
-            40, 150, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+            40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
 
         traj_dipole_value = cutting(traj_dipole_value, x_val)
         
-        # plt.plot((dp13[:,0]-dp13[0,0])*self.v*1e-3, dp13[:,5])
+        # plt.plot((dp13[:,0]-dp13[0,0])*self.v_squid*1e-3, dp13[:,5])
         
         # plt.show()
         
         return traj_dipole_value
 
-    def save_data_z(self,  z ):
-
-        traj_dipole_value = self.extract_dipole_value_traji(
-            self.TRAJ_SELECT, z=z)
-                   
-        num_traj = len(traj_dipole_value)
-
-        num_dipole = len(traj_dipole_value[0])
-        # signal_shape = traj_dipole_value[0][0].shape[0]-1
-        signal_shape = traj_dipole_value[0][0].shape[0]
-
-        print("signal shape  : ", signal_shape)
-        print("Nombre de trajectoire   : ", num_traj)
-        print("Nombre de dipole   : ", num_dipole)
-
-        X = np.zeros((num_traj, num_dipole*signal_shape))
-
-        for i, data_traj in enumerate(traj_dipole_value):
-            dp = np.array([])
-            for data_dp in data_traj:
-                integrale_derivee_I = data_dp[:, 1] - data_dp[0, 1]
-                
-                # integrale_derivee_I = data_dp[1:, 1]   
-                
-                dp = np.concatenate((dp, integrale_derivee_I))
-            X[i] = dp.ravel()
-
-        # y  =  np.array([0]*5 + [1]*8 + [0]*4).reshape((num_traj,1))
-        
-        if self.TEST == 1:
-            
-            temp_traj = [0]*4 + [1]*4 + [0]*4
-            y = []
-            for cpt in self.TRAJ_SELECT :
-                y.append(temp_traj[cpt])
-            y = np.array(y).reshape((num_traj, 1))
-            
-        elif self.TEST == 2:
-            
-            temp_traj = [0]*5 + [1]*8 + [0]*4
-            
-            y = []
-            for cpt in self.TRAJ_SELECT :
-                y.append(temp_traj[cpt])
-            y = np.array(y).reshape((num_traj, 1))
-
-
-        # ajout de la valeur d'echantiollonnage
-        X = np.concatenate(
-            (X, np.array([signal_shape]*num_traj).reshape(-1, 1)), axis=1)
-        X = np.concatenate((X, y), axis=1)  # ajout des labels
-
-        df = pd.DataFrame(X)
-        if not os.path.exists(self.path_to_data_dir):
-            os.mkdir(self.path_to_data_dir)
-
-        df.to_csv(os.path.join(self.path_to_data_dir,
-                  "data{}.csv".format(z)), header=False, index=False)
+ 
 
     def interpolation_courbe(self, list_signal,  alt_z, alt_z_val):
 
@@ -441,11 +391,9 @@ class Data_extraction:
         # signal pour toutes les altitudes
         return np.array(signal_allz, dtype=np.float64).T
 
-    def extract_dipole_value_all_altitude(self, alt_z, alt_z_val):
+    def fusion_data(self, alt_z):
 
         data = []
-        X_no_interp = []
-
         for z in alt_z:
             data.append(pd.read_csv(os.path.join(self.path_to_data_dir,
                         'data{}.csv'.format(z)), header=None, index_col=None))
@@ -456,97 +404,91 @@ class Data_extraction:
         self.dp_n = int(data[0].shape[1] / self.signal_shape)
         self.traj = int(data[0].shape[0])
 
+        self.num_alt = len(alt_z)
+        X = np.zeros(
+            (self.num_alt, self.traj*self.dp_n*self.signal_shape))
+ 
+        
         for i in range(len(alt_z)):
-            X_no_interp.append(np.array(
-                data[i].iloc[:, :-2], dtype=np.float64).reshape(-1, self.dp_n, self.signal_shape))
+            X[i] = (np.array(
+                data[i].iloc[:, :-2], dtype=np.float64).flatten())
 
 
-        self.num_alt = len(alt_z_val)
-        X_interp = np.zeros(
-            (self.num_alt, self.traj, self.dp_n, self.signal_shape))
-        y = alt_z_val.reshape(-1, 1)  # array  of signal_shape
+        y = alt_z.reshape(-1, 1)  # array  of signal_shape
 
         # #     #------------------------features + window------------------
         print(" le nombre de trajectoires est {} ".format(self.traj))
         print(" le nombre de dipoles est {} ".format(self.dp_n))
-        print(" nombre d'altitude obtenue par regression {}".format(self.num_alt))
+        print(" nombre d'altitude{}".format(self.num_alt))
 
-        for k in range(len(alt_z_val)):
-            for i in range(self.traj):
-                for j in range(self.dp_n):
-                    list_signal = []
-                    for x in X_no_interp:
-                        list_signal.append(x[i][j])
-                    X_interp[k][i][j] = self.interpolation_courbe(
-                        list_signal, alt_z,  alt_z_val)[k]
+    
+        X = X.reshape(-1, self.traj*self.dp_n*self.signal_shape)
+        X = np.concatenate(
+            (X, np.array([self.signal_shape]*self.num_alt).reshape(-1, 1)), axis=1)
+        X = np.concatenate((X, y), axis=1)
+        df = pd.DataFrame(X)
+        df.to_csv(os.path.join(self.path_to_data_dir,
+                  "data_T{}_P_{}_DP{}_{}.csv".format(self.TEST, self.pipe, self.dp_n, self.index_traj)), header=False, index=False)
+        
+        print("fusion file created")
+     
 
-        X_interp = X_interp.reshape(-1, self.traj*self.dp_n*self.signal_shape)
-        X_interp = np.concatenate(
-            (X_interp, np.array([self.signal_shape]*self.num_alt).reshape(-1, 1)), axis=1)
-        X_interp = np.concatenate((X_interp, y), axis=1)
+    def save_data_z(self, z=5):
 
-        df = pd.DataFrame(X_interp)
+        traj_dipole_value = self.extract_dipole_value_traji(
+            self.traj_case[self.index_traj], z=z)
+                   
+        num_traj = len(traj_dipole_value)
 
+        num_dipole = len(traj_dipole_value[0])
+        signal_shape = traj_dipole_value[0][0].shape[0]-1
+
+        print("signal shape  : ", signal_shape)
+        print("Nombre de trajectoire   : ", num_traj)
+        print("Nombre de dipole   : ", num_dipole)
+
+        X = np.zeros((num_traj, num_dipole*signal_shape))
+
+        for i, data_traj in enumerate(traj_dipole_value):
+            dp = np.array([])
+            for data_dp in data_traj:
+                _, integrale_derivee_I = hlp.integrale_derivee(
+                    data_dp[:, 0], data_dp[:, 1])
+                # integrale_derivee_I = data_dp[1:, 1]   
+                
+                dp = np.concatenate((dp, integrale_derivee_I))
+            X[i] = dp.ravel()
+
+        # y  =  np.array([0]*5 + [1]*8 + [0]*4).reshape((num_traj,1))
+        if self.TEST == 1:
+            
+            temp_traj = [0]*4 + [1]*4 + [0]*5
+            y = []
+            for cpt in self.traj_case[self.index_traj] :
+                y.append(temp_traj[cpt])
+            y = np.array(y).reshape((num_traj, 1))
+            
+        elif self.TEST == 2:
+            
+            temp_traj = [0]*5 + [1]*8 + [0]*4
+            
+            y = []
+            for cpt in self.traj_case[self.index_traj] :
+                y.append(temp_traj[cpt])
+            y = np.array(y).reshape((num_traj, 1))
+
+        # ajout de la valeur d'echantiollonnage
+        X = np.concatenate(
+            (X, np.array([signal_shape]*num_traj).reshape(-1, 1)), axis=1)
+        X = np.concatenate((X, y), axis=1)  # ajout des labels
+
+        df = pd.DataFrame(X)
         if not os.path.exists(self.path_to_data_dir):
             os.mkdir(self.path_to_data_dir)
 
         df.to_csv(os.path.join(self.path_to_data_dir,
-                  "data_all_z_pipe_{}_pipe.csv".format(self.pipe)), header=False, index=False)
-
-        # fig, axes = plt.subplots(3,2, figsize=(15,12))
-        # axes = axes.flatten()
-
-        # for j in range(6):
-        #     axes[j].plot(X_interp[0,j*self.signal_shape:(j+1)*self.signal_shape])
-
-        # plt.show()
-        print("file for all altitude created")
-
-    def plot_dipole_traji_dipolej(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
-
-        traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
-    
-        for traj, list_dipole in enumerate(traj_dipole_value):
-            fig = plt.figure()
-
-            for i in num_dipole_list:
-
-                dp = list_dipole[i]
-
-                x = dp[:, 0]
-                tsec = range(dp.shape[0])
-
-                x = (tsec, x)[axis_x]
-
-                # integrale_derivee du signal
-                X, Y = hlp.integrale_derivee(x, dp[:, 1])
-                # X, Y = dp[1:, 0], dp[1:, 1]
-                
-
-                # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
-
-                # Moyenne glissante
-                lissage_dp = hlp.lissage(list(Y), 20)
-
-                plt.plot(X, Y, label="dp sans filtre{}".format(
-                self.dipole[i]), linewidth=1)   
-
-                  # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                #     self.dipole[i]), linewidth=1)              
-                # sns.set()
-
-            choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
-                      [self.TEST - 1]))[axis_x]
-            plt.xlabel(choice)
-            plt.ylabel("I_rms")
-            plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
-                num_traj_list[traj]+1, z, self.pipe))
-            # plt.grid()
-            # plt.legend()
-
-        # plt.show()
-
-
+                  "data{}.csv".format(z)), header=False, index=False)
+   
     def generate_data_for_interp(self):
        
         essai = 2
@@ -582,17 +524,21 @@ class Data_extraction:
     
             self.extract_dipole_value_all_altitude(alt_z=alt, alt_z_val=alt_z_val)
             
-            
-    def extract_alt(self, TRAJ_SELECT):
+           
+           
+    def extract_alt(self, gaussian_filter=True):
                 
         all_data = []
         slice_traj = []
         all_traj = sorted(os.listdir(self.path_altitude_echosondeur), key=hlp.key_data)
         
         
-        for cpt in TRAJ_SELECT :
+        for cpt in self.traj_case[self.index_traj] :
             slice_traj.append(all_traj[cpt])
-            
+        
+        x_val = [np.linspace(40, 460, 1064), np.linspace(
+            40, 150, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+        
         for traj in slice_traj:
             
             data = pd.read_csv(os.path.join(
@@ -602,36 +548,44 @@ class Data_extraction:
             data.drop_duplicates(inplace=True)
             data = np.array(data, dtype=np.float64)
             
-            x_val, y_val  = interpolation_alt(np.linspace(40, 150, 300), data)
+            x_val, y_val  = interpolation_alt(x_val, data, self.v_opt)
             
-            y_val = filters.gaussian_filter1d(y_val,sigma=5)
+
+            if gaussian_filter :
+                y_val = filters.gaussian_filter1d(y_val,sigma=10)
             all_data.append(y_val)
+
             
-            
+
+        
         df =  pd.DataFrame(np.array(all_data))
 
         df.to_csv(os.path.join(self.path_to_data_dir,
-         "alt_pipe.csv"), header=False, index=False)
+         "alt_T{}_P{}_{}.csv".format(self.TEST, self.pipe,self.index_traj)), header=False, index=False)
         
         
-        print(f"nombre de trajectoires selectionnées pour l'altitude = {len(TRAJ_SELECT)}")
+        print(f"nombre de trajectoires selectionnées pour l'altitude = {len(self.traj_case[self.index_traj])}")
         return all_data
 
-def interpolation_alt(x_val, alt) : 
-        
-    dist_y = (alt[:,0] - alt[0,0])*4e-3 
+
+
+def interpolation_alt(x_val, alt, v) : 
+    
+    dist_y = (alt[:,0] - alt[0,0])*v*1e-3 + 40
     y_val = np.interp(x_val, dist_y, alt[:, 2])*1e-1
         
     return x_val, y_val
 
 
-
-
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=1)
-    alt = data_extraction.extract_alt(data_extraction.TRAJ_SELECT)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=1, PIPE=1)
+    alt_z = np.arange(10, 20+2, 2)
+    
+    for z in alt_z :
+        data_extraction.save_data_z(z=z)
+    data_extraction.fusion_data(alt_z)
     
     # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
@@ -649,6 +603,9 @@ if __name__ == '__main__':
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
     
     # interpolation
-    data_extraction.generate_data_for_interp()
+    # data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
+
+# %%
+
 # %%
