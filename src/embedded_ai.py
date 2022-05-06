@@ -1,7 +1,13 @@
-import os 
+
+from email import feedparser
+import os
+from xml.dom import NO_MODIFICATION_ALLOWED_ERR 
 import pandas as pd
 import numpy as np
 import pickle
+import time
+from sklearn.datasets import fetch_20newsgroups
+from sympy import Segment
 
 def key(file):
 
@@ -16,100 +22,113 @@ def list_file(path):
             key=key)
     return  list
 
-def current(data):
-    # A = np.empty((0,10))A = np.empty((0,10))
+
+def current(data, index):
+    
     
     traj_dipole_value = []
-    dp12 = data[1, :].reshape(1, 6)
-    dp13 = data[1, :].reshape(1, 6)
-    dp16 = data[1, :].reshape(1, 6)
-    dp18 = data[1, :].reshape(1, 6)
-    dp26 = data[1, :].reshape(1, 6)
-    dp27 = data[1, :].reshape(1, 6)
-    dp28 = data[1, :].reshape(1, 6)
-    dp36 = data[1, :].reshape(1, 6)
-    dp37 = data[1, :].reshape(1, 6)
-    dp38 = data[1, :].reshape(1, 6)
-    dp45 = data[1, :].reshape(1, 6)
-    dp58 = data[1, :].reshape(1, 6)
-    dp68 = data[1, :].reshape(1, 6)
-
-    for i in range(0, data.shape[0]): # a refaire plus propre avec pandas 
-        if data[i, 1] == 1.0 and data[i, 2] == 2.0:
-            dp12 = np.concatenate(
-                (dp12, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 1.0 and data[i, 2] == 3.0:
-            dp13 = np.concatenate(
-                (dp13, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 1.0 and data[i, 2] == 6.0:
-            dp16 = np.concatenate(
-                (dp16, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 1.0 and data[i, 2] == 8.0:
-            dp18 = np.concatenate(
-                (dp18, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 2.0 and data[i, 2] == 6.0:
-            dp26 = np.concatenate(
-                (dp26, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 2.0 and data[i, 2] == 7.0:
-            dp27 = np.concatenate(
-                (dp27, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 2.0 and data[i, 2] == 8.0:
-            dp28 = np.concatenate(
-                (dp28, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 3.0 and data[i, 2] == 6.0:
-            dp36 = np.concatenate(
-                (dp36, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 3.0 and data[i, 2] == 7.0:
-            dp37 = np.concatenate(
-                (dp37, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 3.0 and data[i, 2] == 8.0:
-            dp38 = np.concatenate(
-                (dp38, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 4.0 and data[i, 2] == 5.0:
-            dp45 = np.concatenate(
-                (dp45, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 5.0 and data[i, 2] == 8.0:
-            dp58 = np.concatenate(
-                (dp58, data[i, :].reshape(1, 6)), axis=0)
-        if data[i, 1] == 6.0 and data[i, 2] == 8.0:
-            dp68 = np.concatenate(
-                (dp68, data[i, :].reshape(1, 6)), axis=0)
-            
-    traj_dipole_value.append(
-                [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
- 
-    return traj_dipole_value
+    EE = 1
+    ER = 2
+    
+    dip_num = [(1,2), (1,3), (1,6), (1,8),
+               (2,6), (2,7), (2,8), (3,6),
+               (3,7), (3,8), (4,5), (5,8),
+               (6,8)]
+    
+    # Récupération des mesures par dipôle
+    
+    for ee, er in dip_num :
+        
+        dp_current = data[(data[EE]==ee) & (data[ER]==er)][5]
+        traj_dipole_value.append(dp_current[10*index:10*(index+1)]) # take 10 values per dp
+  
+    
+    try :
+        features = np.array(traj_dipole_value, dtype=np.float64).reshape(1,130)
+        EOF = False 
+        
+    except ValueError :
+        EOF = True # probable fin de fichier
+        print("probable fin de fichier")
+        features = np.arange(130).reshape(1,130)
+    
+    return features, EOF
         
 if __name__ == '__main__' :
     
     # path = "/home/root/logs"
+    path_logs = "logs_test_embarques\logs_ia"
+    Segment_width  = 10
     path = "logs_test_embarques" # verifier les droits 
+    
     fileExt = "logs_data"
     model_filename = "model/ET_model.sav"
     model = pickle.load(open(model_filename, 'rb'))
+    data_line = 0
     
+    n_init = len(list_file(path)) # nombre de fichier dans le repertoire au debut du test
+    n0_file = n_init # numero du trajectoire pointé par le code 
     
-    n0_file = len(list_file(path))
+    print("n0 = ", n0_file)
+    EOF = False
     
+    column = [ "dp_{}_{}".format(i,j) 
+            for i in range(1,14)  for j in range(1,11)]
+
+    column = column.append("alt")
+    
+
     while True :
-
-        n_file = len(list_file(path))
         
-        if  n_file == n0_file : # or = n0+1
-            n0_file = n_file
+        n_file = len(list_file(path)) # nombre de fichier dans le document a un instant t
+        # index = 0 # remis a zero pour chaque traj
+        EOF = False # fin de fichier 
+        
+        if  n_file != n0_file : # or = n0+1 (n_file != n0_file)
+            n0_file = n0_file + 1
+            index = 0 
             
-            data = pd.read_csv(os.path.join(path, list_file(path)[-1]), on_bad_lines='skip', dtype='unicode')
-            data = data.iloc[2:, :6]
-            data.drop_duplicates(inplace=True)
-            data = np.array(data, dtype=np.float64)
+            # print("innnnnnnnnnnnnnnnnnnn", not(EOF), not(n0_file == n_file) )
+            traj_path = os.path.join(path, list_file(path)[n0_file-1])
+            
+            print("in 2")
+            
+            df =  pd.DataFrame(columns=column)
+            while not ( EOF and (n0_file!=n_file)) : 
+                
+          
+                data = pd.read_csv(traj_path, delimiter=',',
+                                encoding = "ISO-8859-1", engine='python', header=None, 
+                                skiprows= 3)
 
-            features = current(data)
+                data.drop_duplicates(inplace=True)
+                
+                features, EOF = current(data, index)
+                
+                index = (index+1) if not(EOF)  else index # secion lu dans le fichier ( 10 mesures)
+                              
+                # print(EOF, n0_file==n_file, n_file)
+                
+                n_file = len(list_file(path))
+                print("traj {} section {} n_file {}".format(n0_file, index, n_file))
+                                       
+                
+                # prediction et logs, try sur cette func
+                alt = model.predict(features)
+                
+                features = np.concatenate((features, alt.reshape(1,1)), axis=1)
+        
+                df_new_row = pd.DataFrame(features, columns=column)           
+                
+                df = pd.concat([df,df_new_row], ignore_index=True)
             
-            features = data.iloc[-1,:]
-            
-            #prediction et logs, try sur cette func
-            # alt = model.predict(np.array(features).reshape(1,130))
-            
+            if not os.path.exists(path_logs):
+                os.mkdir(path_logs)
+
+            df.to_csv(os.path.join(path_logs,
+                    "traj{}.csv".format(n0_file-n_init)), header=False, index=False)
+                
+                
            
             
 

@@ -1,9 +1,7 @@
 # %%
 
 
-from statistics import mode
-from tkinter.tix import Tree
-from xmlrpc.client import TRANSPORT_ERROR, FastUnmarshaller
+
 from data_manipulation_burried_object_localisation import Data_extraction
 import numpy as np
 import scipy as sp

@@ -362,7 +362,7 @@ class Data_extraction:
         # traj_dipole_value = echantillonnage(traj_dipole_value, min_signal_shape)
 
         # --------interpolation
-        x_val = [np.linspace(40, 460, 1064), np.linspace(
+        x_val = [np.linspace(40, 460, 1060), np.linspace(
             40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
 
         traj_dipole_value = cutting(traj_dipole_value, x_val)
@@ -536,8 +536,8 @@ class Data_extraction:
         for cpt in self.traj_case[self.index_traj] :
             slice_traj.append(all_traj[cpt])
         
-        x_val = [np.linspace(40, 460, 1064), np.linspace(
-            40, 150, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+        x_val = [np.linspace(40, 460, 1060), np.linspace(
+            40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
         
         for traj in slice_traj:
             
@@ -550,7 +550,6 @@ class Data_extraction:
             
             x_val, y_val  = interpolation_alt(x_val, data, self.v_opt)
             
-
             if gaussian_filter :
                 y_val = filters.gaussian_filter1d(y_val,sigma=10)
             all_data.append(y_val)
@@ -582,11 +581,12 @@ if __name__ == '__main__':
 
     data_extraction = Data_extraction(ESSAI = 2, TEST=1, PIPE=1)
     alt_z = np.arange(10, 20+2, 2)
+    # alt_z = np.arange(4, 12, 2)
     
     for z in alt_z :
         data_extraction.save_data_z(z=z)
     data_extraction.fusion_data(alt_z)
-    
+    data_extraction.extract_alt()
     # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
     # # Make data.
@@ -605,7 +605,3 @@ if __name__ == '__main__':
     # interpolation
     # data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
-
-# %%
-
-# %%

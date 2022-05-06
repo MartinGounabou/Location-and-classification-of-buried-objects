@@ -21,3 +21,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             value  = random.random()
             conn.sendall(str(value).encode())
             time.sleep(0.01)
+
+    
+    
+    
+    
