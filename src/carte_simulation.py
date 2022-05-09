@@ -11,9 +11,7 @@ import os
 a = 0
 def handler(signum, frame):
     global a
-    
-    print(a)
-    
+       
     for i in range(a):
         filename2 = "logs_test_embarques\logs_data{}_x19.csv".format(i)
         os.remove(filename2)
@@ -33,6 +31,3 @@ for i in range(17) :
     
     filename2 = "logs_test_embarques\logs_data{}_x19.csv".format(i)
     os.remove(filename2)
-
-while True :
-    pass

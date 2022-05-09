@@ -117,7 +117,7 @@ class Data_extraction:
                             }
         
       
-        self.index_traj = list(self.traj_case.keys())[2]
+        self.index_traj = list(self.traj_case.keys())[1]
         
 
     # [data1, data2, data3 ... data_tejnum]
@@ -153,7 +153,7 @@ class Data_extraction:
         elif self.TEST == 1:
 
             # retirer le dossier old, tous les alts
-            alt_dir = sorted(os.listdir(self.path))[:-1]
+            alt_dir = sorted(os.listdir(self.path))
             alt_dir = sorted(alt_dir, key=hlp.key_alt)
 
             self.z = [hlp.key_alt(rep_alt) for rep_alt in alt_dir]
@@ -550,13 +550,12 @@ class Data_extraction:
             
             x_val, y_val  = interpolation_alt(x_val, data, self.v_opt)
             
+      
+            
             if gaussian_filter :
                 y_val = filters.gaussian_filter1d(y_val,sigma=10)
             all_data.append(y_val)
 
-            
-
-        
         df =  pd.DataFrame(np.array(all_data))
 
         df.to_csv(os.path.join(self.path_to_data_dir,
@@ -565,7 +564,6 @@ class Data_extraction:
         
         print(f"nombre de trajectoires selectionnées pour l'altitude = {len(self.traj_case[self.index_traj])}")
         return all_data
-
 
 
 def interpolation_alt(x_val, alt, v) : 
@@ -579,9 +577,9 @@ def interpolation_alt(x_val, alt, v) :
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI = 2, TEST=1, PIPE=1)
-    alt_z = np.arange(10, 20+2, 2)
-    # alt_z = np.arange(4, 12, 2)
+    data_extraction = Data_extraction(ESSAI = 2, TEST=2, PIPE=1)
+    alt_z = np.arange(4,12+2,2)
+    # alt_z = np.arange(4, 12+2, 2)
     
     for z in alt_z :
         data_extraction.save_data_z(z=z)

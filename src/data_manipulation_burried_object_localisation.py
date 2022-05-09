@@ -143,9 +143,9 @@ class Data_extraction:
 
         elif self.TEST == 1:
 
-            # retirer le dossier old, tous les alts
-            alt_dir = sorted(os.listdir(self.path))[:-1]
-            alt_dir = sorted(alt_dir, key=hlp.key_alt)
+          
+            
+            alt_dir = sorted(os.listdir(self.path), key=hlp.key_alt)
 
             self.z = [hlp.key_alt(rep_alt) for rep_alt in alt_dir]
 
@@ -699,6 +699,7 @@ class Data_extraction:
             
         for traj in slice_traj:
             
+            
             data = pd.read_csv(os.path.join(
                 self.path_altitude_echosondeur, traj), on_bad_lines='skip', dtype='unicode')
             
@@ -708,9 +709,13 @@ class Data_extraction:
             
             x_val, y_val  = interpolation_alt(np.linspace(40, 150, 300), data)
             
+            plt.plot(y_val)
             if gaussian_filter :
                 y_val = filters.gaussian_filter1d(y_val,sigma=5)
             all_data.append(y_val)
+            plt.plot(y_val)
+
+            plt.show()
             
             
         df =  pd.DataFrame(np.array(all_data))
@@ -743,12 +748,13 @@ if __name__ == '__main__':
     # x = np.linspace(40, 150, 300)
     
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [1,10,12], z = 4)
-    # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 4)
-    # plt.show()
+    # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 12)
+    plt.show()
     
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
     
     # interpolation
     # data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
+    
 # %%

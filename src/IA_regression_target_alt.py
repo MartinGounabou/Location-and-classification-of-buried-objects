@@ -251,7 +251,6 @@ class Artificial_intelligence(Data_extraction):
             self.best_params = cv.best_params_
             print(self.best_params)
 
-        
     def load_E2T2P2_data(self, segment_width=10):
 
         path = os.path.join(self.path_to_data_dir, 'data_all_z_pipe2_dp13.csv')
