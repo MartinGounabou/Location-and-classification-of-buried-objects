@@ -558,7 +558,7 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=3)
+    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
     alt_z = np.arange(4, 12+2, 2)
     # alt_z = np.arange(4, 12+2, 2)
 

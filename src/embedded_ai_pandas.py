@@ -1,23 +1,12 @@
 
-
-from email import header
-from email.headerregistry import HeaderRegistry
+from email import feedparser
 import os
-from matplotlib.pyplot import axis
-
-
+from xml.dom import NO_MODIFICATION_ALLOWED_ERR 
+import pandas as pd
 import numpy as np
 import pickle
 import time
 
-from pyparsing import col
-
-
-def drop_duplicate(data):
-    
-    uniq, index = np.unique(data[0], return_index=True)
-    
-    return data[0][index], data[1][index], data[2][index], data[3][index]
 
 
 def key(file):
@@ -34,10 +23,12 @@ def list_file(path):
     return  list
 
 
-def current(EE, ER, dp, index):
+def current(data, index):
     
     
     traj_dipole_value = []
+    EE = 1
+    ER = 2
     
     dip_num = [(1,2), (1,3), (1,6), (1,8),
                (2,6), (2,7), (2,8), (3,6),
@@ -48,7 +39,7 @@ def current(EE, ER, dp, index):
     
     for ee, er in dip_num :
         
-        dp_current = dp[(EE==ee) & (ER==er)]
+        dp_current = data[(data[EE]==ee) & (data[ER]==er)][5]
         traj_dipole_value.append(dp_current[10*index:10*(index+1)]) # take 10 values per dp
   
     
@@ -65,7 +56,7 @@ def current(EE, ER, dp, index):
         
 if __name__ == '__main__' :
     
-    # path = "/root/logs"
+    # path = "/home/root/logs"
     path_logs = "logs_test_embarques\logs_ia"
     Segment_width  = 10
     path = "logs_test_embarques" # verifier les droits 
@@ -73,19 +64,20 @@ if __name__ == '__main__' :
     fileExt = "logs_data"
     model_filename = "model/ET_model.sav"
     model = pickle.load(open(model_filename, 'rb'))
+    data_line = 0
     
     n_init = len(list_file(path)) # nombre de fichier dans le repertoire au debut du test
     n0_file = n_init # numero du trajectoire pointé par le code 
     
     print("n0 = ", n0_file)
     EOF = False
-
-    column = [ "dp_{}_{}".format(i,j) for i in range(1,14)  for j in range(1,11)]
-
+    
+    column = [ "dp_{}_{}".format(i,j) 
+            for i in range(1,14)  for j in range(1,11)]
 
     column.append("alt")
     
-    
+
     while True :
         
         n_file = len(list_file(path)) # nombre de fichier dans le document a un instant t
@@ -98,16 +90,20 @@ if __name__ == '__main__' :
             
             # print("innnnnnnnnnnnnnnnnnnn", not(EOF), not(n0_file == n_file) )
             traj_path = os.path.join(path, list_file(path)[n0_file-1])
-
-            df =  np.zeros((1,131))
             
+            print("in 2")
+            
+            df =  pd.DataFrame(columns=column)
             while not ( EOF and (n0_file!=n_file)) : 
                 
-                t, EE, ER, dp = np.loadtxt(traj_path, delimiter=',', usecols=(0, 1,2,5), skiprows = 3, unpack=True)  
           
-                _, EE, ER, dp = drop_duplicate([t, EE, ER, dp])
+                data = pd.read_csv(traj_path, delimiter=',',
+                                encoding = "ISO-8859-1", engine='python', header=None, 
+                                skiprows= 3)
+
+                data.drop_duplicates(inplace=True)
                 
-                features, EOF = current(EE, ER, dp, index)
+                features, EOF = current(data, index)
                 
                 index = (index+1) if not(EOF)  else index # secion lu dans le fichier ( 10 mesures)
                               
@@ -120,15 +116,18 @@ if __name__ == '__main__' :
                 # prediction et logs, try sur cette func
                 alt = model.predict(features)
                 
-                features_alt = np.concatenate((features, alt.reshape(1,1)), axis=1)
-                  
-                df = np.concatenate((df, features_alt), axis=0)
+                features = np.concatenate((features, alt.reshape(1,1)), axis=1)
+        
+                df_new_row = pd.DataFrame(features, columns=column)           
+                
+                df = pd.concat([df,df_new_row], ignore_index=True)
             
             if not os.path.exists(path_logs):
                 os.mkdir(path_logs)
 
-            np.savetxt(os.path.join(path_logs,
-                        "traj{}.csv".format(n0_file-n_init)), df, header= ','.join(column))  
+            df.to_csv(os.path.join(path_logs,
+                    "traj{}.csv".format(n0_file-n_init)), header=False, index=False)
+                
                 
            
             

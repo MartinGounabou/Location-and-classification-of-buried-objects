@@ -352,6 +352,7 @@ class Data_extraction:
         x_val = [np.linspace(40, 460, 1060), np.linspace(
             40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
 
+  
         traj_dipole_value = cutting(traj_dipole_value, x_val)
 
         # plt.plot((dp13[:,0]-dp13[0,0])*self.v_squid*1e-3, dp13[:,5])
@@ -780,11 +781,13 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
 
+    data_extraction.extract_dipole_value_traji(range(17), 4)
     # alt = data_extraction.extract_alt()
 
     # x = np.linspace(40, 150, 300)
+    # data_extraction.plot_dipole_traji_dipolej(range(6,11), [1], z = 4)
 
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [1,10,12], z = 4)
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 12)
