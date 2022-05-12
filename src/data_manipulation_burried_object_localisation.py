@@ -352,7 +352,6 @@ class Data_extraction:
         x_val = [np.linspace(40, 460, 1060), np.linspace(
             40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
 
-  
         traj_dipole_value = cutting(traj_dipole_value, x_val)
 
         # plt.plot((dp13[:,0]-dp13[0,0])*self.v_squid*1e-3, dp13[:,5])

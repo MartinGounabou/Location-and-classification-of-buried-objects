@@ -1,7 +1,6 @@
 # %%
 
 
-
 from data_manipulation_burried_object_localisation import Data_extraction
 import numpy as np
 import scipy as sp
@@ -26,7 +25,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import shuffle
-from sklearn.linear_model import LinearRegression, Ridge,Lasso
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
@@ -164,92 +163,91 @@ class Artificial_intelligence(Data_extraction):
 
         return X_train, y_train, X_test, y_test
 
-    def find_best_learning_params(self, model, type='LR'):
+    def find_best_learning_params(self, model, name='LR'):
 
-            X_train, y_train, _, _ = self.data_split()
-            
-                
-            if type == 'LR':
+        X_train, y_train, _, _ = self.data_split()
 
-                hyper_param_grid = {
-                    'fit_intercept' : [True, False]
-                }
-                 
-            elif type == 'BR':
-                hyper_param_grid = {
-                    'alpha_init':[1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.9],
-                    'lambda_init': [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-9]
-              }
-    
-            elif type == 'DT' : 
-                hyper_param_grid = {
-                        "max_depth": [2, 6], "max_features": [1,3,4,5,7,8,9], 
-                        "min_samples_leaf": [1,3,4,5,6,7],
-                        }
-            
-            elif type == 'RF':
-                # The number of trees in the forest.
-                bootstrap =  [True]
-                n_estimators = [1, 10, 100, 500, 1000]
-                max_depth = [5, 10, 20]
-                min_samples_leaf = [1, 5, 10]
-                hyper_param_grid = dict(
-                    bootstrap=bootstrap, n_estimators=n_estimators, max_depth=max_depth, min_samples_leaf=min_samples_leaf)
+        if name == 'LR':
 
-            elif type == 'SVR' : 
-                hyper_param_grid = {'C': [0.1, 1, 10, 100, 1000], 
-                'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
-                'kernel': ['rbf']
-                }
-                
-            elif type == 'KNR' : 
-                hyper_param_grid = {
-                    'n_neighbors' : [ 3,5,11,19],
-                    'weights' : ['uniform', 'distance'],
-                    'metric' : [ 'euclidien', 'manhattan']
-                    
-                }        
-                
-            elif type == 'GB' : 
-                hyper_param_grid = {
-                    'learning_rate': [0.01,0.02,0.03,0.04],
-                    'subsample'    : [0.9, 0.5, 0.2, 0.1],
-                    'n_estimators' : [100,500,1000, 1500],
-                    'max_depth'    : [4,6,8,10]
-                 }
+            hyper_param_grid = {
+                'fit_intercept': [True, False]
+            }
 
-            elif type == 'ET':
-                hyper_param_grid = {'n_estimators':  [int(x) for x in np.arange(start=100, stop=500, step=100)], 'max_depth': [2, 8, 16, 32, 50],
-                                    # 'min_sample_split': [2,4,6],'min_sample_leaf': [1,2],#'oob_score': [True, False],
-                                    # 'bootstrap': [True, False],'warm_start': [True, False], 'criterion': ['mse', 'mae'],
-                                    'max_features': ['auto', 'sqrt', 'log2'],
-                                    }
+        elif name == 'BR':
+            hyper_param_grid = {
+                'alpha_init': [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.9],
+                'lambda_init': [1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6, 1e-9]
+            }
 
-            elif type == 'Lo':
+        elif name == 'DT':
+            hyper_param_grid = {
+                    "max_depth": [2, 6], "max_features": [1, 3, 4, 5,7,8,9], 
+                    "min_samples_leaf": [1, 3, 4, 5,6,7],
+            }
 
-                hyper_param_grid = {
-                    'alpha':[0.02, 0.024, 0.025, 0.026, 0.03],
+        elif name == 'RF':
+            # The number of trees in the forest.
+            bootstrap = [True]
+            n_estimators = [1, 10, 100, 500, 1000]
+            max_depth = [5, 10, 20]
+            min_samples_leaf = [1, 5, 10]
+            hyper_param_grid = dict(
+                bootstrap=bootstrap, n_estimators=n_estimators, max_depth=max_depth, min_samples_leaf=min_samples_leaf)
 
-                }
-            
-            elif type == 'Ri':
+        elif name == 'SVR':
+            hyper_param_grid = {'C': [0.1, 1, 10, 100, 1000],
+                                'gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+                                'kernel': ['rbf']
+                                }
 
-                hyper_param_grid = {
-                    'alpha':[200, 230, 250,265, 270, 275, 290, 300, 500],
-                    "solver": ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
-                    }
-                
-            else:
-                print("model type incorrect")
-            # ---------------------------------------
+        elif name == 'KNR':
+            hyper_param_grid = {
+                'n_neighbors' : [ 3, 5, 11, 19],
+                'weights': ['uniform', 'distance'],
+                'metric': ['euclidien', 'manhattan']
 
-            cv = GridSearchCV(model, param_grid=hyper_param_grid,
+            }
+
+        elif name == 'GB':
+            hyper_param_grid = {
+                'learning_rate': [0.01, 0.02, 0.03, 0.04],
+                'subsample': [0.9, 0.5, 0.2, 0.1],
+                'n_estimators': [100, 500, 1000, 1500],
+                'max_depth'    : [4, 6, 8, 10]
+            }
+
+        elif name == 'ET':
+            hyper_param_grid = {'n_estimators':  [int(x) for x in np.arange(start=100, stop=500, step=100)], 'max_depth': [2, 8, 16, 32, 50],
+                                # 'min_sample_split': [2,4,6],'min_sample_leaf': [1,2],#'oob_score': [True, False],
+                                # 'bootstrap': [True, False],'warm_start': [True, False], 'criterion': ['mse', 'mae'],
+                                'max_features': ['auto', 'sqrt', 'log2'],
+                                }
+
+        elif name == 'Lo':
+
+            hyper_param_grid = {
+                'alpha': [0.02, 0.024, 0.025, 0.026, 0.03],
+
+            }
+
+        elif name == 'Ri':
+
+            hyper_param_grid = {
+                'alpha': [200, 230, 250, 265, 270, 275, 290, 300, 500],
+                "solver": ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
+            }
+
+        else:
+            print("model name incorrect")
+        # ---------------------------------------
+
+        cv = GridSearchCV(model, param_grid=hyper_param_grid,
                             cv=3, n_jobs=-1, verbose=2)
 
-            cv.fit(X_train, y_train)
+        cv.fit(X_train, y_train)
 
-            self.best_params = cv.best_params_
-            print(self.best_params)
+        self.best_params = cv.best_params_
+        print(self.best_params)
 
     def load_E2T2P2_data(self, segment_width=10):
 
@@ -304,11 +302,9 @@ class Artificial_intelligence(Data_extraction):
         y_new = np.array(y_new)
 
         return X_new, y_new
-    
 
-    
+
 # %%
-
 if __name__ == '__main__':
 
     artificial_intelligence = Artificial_intelligence()
@@ -332,16 +328,16 @@ if __name__ == '__main__':
     Ri = False
 
     choice = [LR, BR, DT, RF, SVR_, KNR, GB, ET, Lo, Ri]
-    
-    dict_model = {"LR": LinearRegression(), "BR": BayesianRidge(),"DT": DecisionTreeRegressor(), 
-                    "RF": RandomForestRegressor(), "SVR": SVR(), "KNR" : KNeighborsRegressor() ,
-                    "GB": GradientBoostingRegressor(), "ET": ExtraTreesRegressor() , "Lo": Lasso() , "Ri":   Ridge()}
-    
+
+    dict_model = {"LR": LinearRegression(), "BR": BayesianRidge(), "DT": DecisionTreeRegressor(),
+                  "RF": RandomForestRegressor(), "SVR": SVR(), "KNR": KNeighborsRegressor(),
+                  "GB": GradientBoostingRegressor(), "ET": ExtraTreesRegressor(), "Lo": Lasso(), "Ri":   Ridge()}
+
     name, model = list(dict_model.items())[choice.index(True)]
 
     print("----------- {} -----------------".format(name))
     # # #-------------------hyperparameters -----------------
-    # artificial_intelligence.find_best_learning_params(model, type=name)
+    # artificial_intelligence.find_best_learning_params(model, name=name)
 
     # model.set_params(**artificial_intelligence.best_params)
 
@@ -364,29 +360,28 @@ if __name__ == '__main__':
         mse_train, mse_test, mae_train, mae_test))
 
     y_pred_lr = model.predict(X_test)
-    
 
-# # Save model 
-    model_filename = os.path.join(artificial_intelligence.path_to_models, f"{name}_model.sav")
 
-    saved_model = pickle.dump(model, open(model_filename,'wb'))
+# # Save model
+    model_filename = os.path.join(
+        artificial_intelligence.path_to_models, f"{name}_model.sav")
+
+    saved_model = pickle.dump(model, open(model_filename, 'wb'))
 
     # df = pd.DataFrame(np.concatenate((X_test, y_pred_lr.reshape(-1, 1)), axis=1))
 
     # df.to_csv(os.path.join(artificial_intelligence.path_to_models,
     #           'test_data.csv'), header=False, index=False)
 #     print('Model is saved into to disk successfully Using Pickle')
-  
 
     df = pd.DataFrame(np.concatenate((y_test.reshape(-1, 1), y_pred_lr.reshape(-1, 1),
                       abs(y_test.reshape(-1, 1)-y_pred_lr.reshape(-1, 1))), axis=1))
 
     df.to_csv(os.path.join(artificial_intelligence.path_to_data_dir,
               'test.csv'), header=False, index=False)
-    
-    
-    print(np.argmax( abs(y_test.reshape(-1, 1)-y_pred_lr.reshape(-1, 1))))
- 
+
+    print(np.argmax(abs(y_test.reshape(-1, 1)-y_pred_lr.reshape(-1, 1))))
+
 '''             
     #########################################################################
     # # #-------------------

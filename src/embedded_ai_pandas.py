@@ -75,7 +75,7 @@ if __name__ == '__main__' :
     column = [ "dp_{}_{}".format(i,j) 
             for i in range(1,14)  for j in range(1,11)]
 
-    column.append("alt")
+    column = column.append("alt")
     
 
     while True :

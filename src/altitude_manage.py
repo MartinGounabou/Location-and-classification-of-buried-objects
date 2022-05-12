@@ -559,26 +559,41 @@ def interpolation_alt(x_val, alt, v):
 if __name__ == '__main__':
 
     data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
-    alt_z = np.arange(4, 12+2, 2)
     # alt_z = np.arange(4, 12+2, 2)
+    # # alt_z = np.arange(4, 12+2, 2)
 
-    for z in alt_z:
-        data_extraction.save_data_z(z=z)
-    data_extraction.fusion_data(alt_z)
-    data_extraction.extract_alt()
+    # for z in alt_z:
+    #     data_extraction.save_data_z(z=z)
+    # data_extraction.fusion_data(alt_z)
+    # data_extraction.extract_alt()
 
-    # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    alt = data_extraction.extract_alt(gaussian_filter=True)
+    alt = np.array(alt)
 
-    # # Make data.
-    # x = np.array([0,5,10,15,17,19,21,23,25,27,29,31,33,35,40,45,50])
-    # y = np.linspace(40, 150, 300)
-    # X, Y = np.meshgrid(y, x)
-    # Z = np.array(alt).reshape((17,300))
+    print(np.min(alt), np.max(alt))
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+    # show plot
+    if data_extraction.TEST == 1:
+        X = np.linspace(40, 460, 1060)
+        Y = np.arange(13)
+    else:
+        X = np.linspace(40, 157, 300)
+        Y = np.arange(17)
+
+    X, Y = np.meshgrid(X, Y)
+
+    Z = alt
+
+    # Plot the surface.
+    surf = ax.plot_surface(X, Y, Z)
+    ax.set_title("surface TEST {}, PIPE {}".format(
+        data_extraction.TEST, data_extraction.pipe))
 
     # ax.plot_surface(X, Y, Z)
     # data_extraction.plot_dipole_traji_dipolej([i], range(1), z = 4)
 
-    # plt.show()
+    plt.show()
 
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
 
