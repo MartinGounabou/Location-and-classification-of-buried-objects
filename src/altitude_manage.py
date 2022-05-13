@@ -40,6 +40,12 @@ class Data_extraction:
                 self.TEST = 2
                 self.traj = 17
                 self.pipe = PIPE
+                
+                           
+                self.traj_case = {"pipe": range(5, 10),
+                    "no_pipe": list(range(2))+list(range(15, 17)),
+                    "all_traj": range(self.traj),
+                    }
 
             elif TEST == 1:
                 self.path = os.path.abspath(
@@ -47,6 +53,12 @@ class Data_extraction:
                 self.TEST = 1
                 self.traj = 13
                 self.pipe = PIPE
+                
+                self.traj_case = {"pipe": range(4, 9),
+                    "no_pipe": list(range(3))+list(range(10, 13)),
+                    "all_traj": range(self.traj),
+                    "traj_7": [6],
+                    }
 
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -73,6 +85,11 @@ class Data_extraction:
                 self.path_altitude_echosondeur = os.path.join(os.path.split(
                     self.path)[0], 'TOF\TOF Test1 - Alt = 5cm - Vit = 3 cm_s')
                 self.v_opt = 3
+                self.traj_case = {"pipe": range(4, 9),
+                    "no_pipe": list(range(3))+list(range(10, 13)),
+                    "all_traj": range(self.traj),
+                    "traj_7": [6],
+                    }
 
             elif TEST == 2:
                 self.path = os.path.abspath(
@@ -88,6 +105,11 @@ class Data_extraction:
                 self.path_altitude_echosondeur = os.path.join(
                     os.path.split(self.path)[0], 'TOF', pipe_path)
                 self.v_opt = 4
+                
+                self.traj_case = {"pipe": range(5, 10),
+                    "no_pipe": list(range(2))+list(range(15, 17)),
+                    "all_traj": range(self.traj),
+                    }
 
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -112,12 +134,10 @@ class Data_extraction:
                          477, 468, 482, 471, 495, 481, 479, 474, 488, 471]
         self.dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
 
-        self.traj_case = {"pipe": range(5, 10),
-                          "no_pipe": list(range(2))+list(range(15, 17)),
-                          "all_traj": range(self.traj),
-                          }
+    
+ 
 
-        self.index_traj = list(self.traj_case.keys())[2]
+        self.index_traj = list(self.traj_case.keys())[3]
 
     # [data1, data2, data3 ... data_tejnum]
 
@@ -558,40 +578,43 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
     # alt_z = np.arange(4, 12+2, 2)
-    # # alt_z = np.arange(4, 12+2, 2)
+    # alt_z = np.arange(4, 12+2, 2)
+    alt_z = np.array([4])
 
-    # for z in alt_z:
-    #     data_extraction.save_data_z(z=z)
-    # data_extraction.fusion_data(alt_z)
-    # data_extraction.extract_alt()
+    for z in alt_z:
+        data_extraction.save_data_z(z=z)
+    data_extraction.fusion_data(alt_z)
+    data_extraction.extract_alt()
 
-    alt = data_extraction.extract_alt(gaussian_filter=True)
-    alt = np.array(alt)
+    # alt = data_extraction.extract_alt(gaussian_filter=True)
+    # alt = np.array(alt)
 
-    print(np.min(alt), np.max(alt))
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    # print(np.min(alt), np.max(alt))
+    # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
-    # show plot
-    if data_extraction.TEST == 1:
-        X = np.linspace(40, 460, 1060)
-        Y = np.arange(13)
-    else:
-        X = np.linspace(40, 157, 300)
-        Y = np.arange(17)
+    # # show plot
+    # if data_extraction.TEST == 1:
+    #     X = np.linspace(40, 460, 1060)
+    #     Y = np.arange(13)
+    # else:
+    #     X = np.linspace(40, 157, 300)
+    #     Y = np.arange(17)
 
-    X, Y = np.meshgrid(X, Y)
+    # X, Y = np.meshgrid(X, Y)
 
-    Z = alt
+    # Z = alt
 
-    # Plot the surface.
-    surf = ax.plot_surface(X, Y, Z)
-    ax.set_title("surface TEST {}, PIPE {}".format(
-        data_extraction.TEST, data_extraction.pipe))
+    # # Plot the surface.
+    # surf = ax.scatter(X, Y, Z, c=Z)
+    # ax.set_title("surface TEST {}, PIPE {}".format(
+    #     data_extraction.TEST, data_extraction.pipe))
 
     # ax.plot_surface(X, Y, Z)
     # data_extraction.plot_dipole_traji_dipolej([i], range(1), z = 4)
+
+
 
     plt.show()
 

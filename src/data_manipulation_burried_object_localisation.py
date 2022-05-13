@@ -780,14 +780,14 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
 
-    data_extraction.extract_dipole_value_traji(range(17), 4)
     # alt = data_extraction.extract_alt()
 
     # x = np.linspace(40, 150, 300)
-    # data_extraction.plot_dipole_traji_dipolej(range(6,11), [1], z = 4)
-
+    data_extraction.plot_dipole_traji_dipolej([6], range(13), z = 4)
+    
+    
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [1,10,12], z = 4)
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 12)
     plt.show()
