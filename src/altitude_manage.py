@@ -40,12 +40,11 @@ class Data_extraction:
                 self.TEST = 2
                 self.traj = 17
                 self.pipe = PIPE
-                
-                           
+
                 self.traj_case = {"pipe": range(5, 10),
-                    "no_pipe": list(range(2))+list(range(15, 17)),
-                    "all_traj": range(self.traj),
-                    }
+                                  "no_pipe": list(range(2))+list(range(15, 17)),
+                                  "all_traj": range(self.traj),
+                                  }
 
             elif TEST == 1:
                 self.path = os.path.abspath(
@@ -53,12 +52,12 @@ class Data_extraction:
                 self.TEST = 1
                 self.traj = 13
                 self.pipe = PIPE
-                
+
                 self.traj_case = {"pipe": range(4, 9),
-                    "no_pipe": list(range(2))+list(range(11, 13)),
-                    "all_traj": range(self.traj),
-                    "traj_7": [6],
-                    }
+                                  "no_pipe": list(range(2))+list(range(11, 13)),
+                                  "all_traj": range(self.traj),
+                                  "traj_7": [6],
+                                  }
 
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -86,15 +85,10 @@ class Data_extraction:
                     self.path)[0], 'TOF\TOF Test1 - Alt = 5cm - Vit = 3 cm_s')
                 self.v_opt = 3
                 self.traj_case = {"pipe": range(4, 9),
-                    "no_pipe": list(range(3))+list(range(10, 13)),
-                    "all_traj": range(self.traj),
-                    "traj_7": [6],
-                    "traj_1": [0],
-                    "traj_9": [8],
-                    "traj_5": [4],
-                    "traj_8": [7],
-                    "traj_13": [12],
-                    }
+                                  "no_pipe": [0, 2] + list(range(10, 13)),
+                                  "all_traj": range(self.traj),
+                                  "traj_12": [12]
+                                  }
 
             elif TEST == 2:
                 self.path = os.path.abspath(
@@ -110,11 +104,12 @@ class Data_extraction:
                 self.path_altitude_echosondeur = os.path.join(
                     os.path.split(self.path)[0], 'TOF', pipe_path)
                 self.v_opt = 4
-                
+
                 self.traj_case = {"pipe": range(5, 10),
-                    "no_pipe": list(range(2))+list(range(15, 17)),
-                    "all_traj": range(self.traj),
-                    }
+                                  "no_pipe": list(range(2))+list(range(15, 17)),
+                                  "all_traj": range(self.traj),
+                                  "traj_14": [1],                                 
+                                  }
 
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -139,10 +134,7 @@ class Data_extraction:
                          477, 468, 482, 471, 495, 481, 479, 474, 488, 471]
         self.dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
 
-    
- 
-
-        self.index_traj = list(self.traj_case.keys())[8]
+        self.index_traj = list(self.traj_case.keys())[1]
     # [data1, data2, data3 ... data_tejnum]
 
     def extract_data_frome_file(self, z, verbose=False):
@@ -256,18 +248,19 @@ class Data_extraction:
                     tsec = data_dp[:, 0]*1e-3
 
                     if self.TEST == 2:
-                        dist_y = (tsec - tsec[0])*self.v_squid
+                        dist_y = (tsec - tsec[0])*self.v_squid + 40
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
 
                     elif self.TEST == 1:
-                        dist_y = (tsec - tsec[0])*self.v_squid
+                        dist_y = (tsec - tsec[0])*self.v_squid + 40
 
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
 
                     elif self.TEST == 3:
-                        dist_y = (tsec - tsec[0])*self.v_squid
+                        dist_y = (tsec - tsec[0])*self.v_squid + 40
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
 
+                    y_val = hlp.lissage(list(y_val), 20)
                     dp = np.concatenate(
                         (x_val.reshape(-1, 1), y_val.reshape(-1, 1)), axis=1)
                     list_dp.append(dp)
@@ -377,8 +370,8 @@ class Data_extraction:
         # traj_dipole_value = echantillonnage(traj_dipole_value, min_signal_shape)
 
         # --------interpolation
-        x_val = [np.linspace(40, 460, 1060), np.linspace(
-            40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+        x_val = [np.linspace(40.5, 460, 1271), np.linspace(
+            40.5, 157, 350), np.linspace(5, 50, 432)][self.TEST - 1]
 
         traj_dipole_value = cutting(traj_dipole_value, x_val)
 
@@ -498,6 +491,92 @@ class Data_extraction:
         df.to_csv(os.path.join(self.path_to_data_dir,
                   "data{}.csv".format(z)), header=False, index=False)
 
+    def plot_dipole_traji_dipolej(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
+
+        traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
+
+        for traj, list_dipole in enumerate(traj_dipole_value):
+            fig = plt.figure()
+            sns.set()
+
+            for i in num_dipole_list:
+
+                dp = list_dipole[i]
+
+                x = dp[:, 0]
+                tsec = range(dp.shape[0])
+
+                x = (tsec, x)[axis_x]
+
+                # integrale_derivee du signal
+                X, Y = hlp.integrale_derivee(x, dp[:, 1])
+                # X, Y = dp[1:, 0], dp[1:, 1]
+
+                # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
+
+                # Moyenne glissante
+                lissage_dp = hlp.lissage(list(Y), 20)
+                # plt.plot(X, Y, label="dp sans filtre{}".format(
+                # self.dipole[i]), linewidth=1)
+
+                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                    self.dipole[i]), linewidth=1)
+
+            choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
+                      [self.TEST - 1]))[axis_x]
+            plt.xlabel(choice)
+            plt.ylabel("I_rms")
+            plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
+                num_traj_list[traj]+1, z, self.pipe))
+            # plt.grid()
+            # plt.legend()
+
+        # plt.show()
+
+    def test(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
+
+        traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
+
+        for traj, list_dipole in enumerate(traj_dipole_value):
+            fig = plt.figure()
+            sns.set()
+
+            for i in num_dipole_list:
+
+                dp = list_dipole[i]
+
+                x = dp[:, 0]
+                tsec = range(dp.shape[0])
+
+                x = (tsec, x)[axis_x]
+
+
+#plot intergerale derivee par segment
+                x = x.reshape(-1, 10)
+                y = dp[:, 1].reshape(-1, 10)
+                X = []
+                Y = []
+                for cpt in range(y.shape[0]):
+                    a, b = x[cpt], hlp.lissage(y[cpt] - y[0, 0], L=3)
+                    X.extend(a.tolist())
+                    Y.extend(b.tolist())
+
+                plt.plot(X, Y,  label="lissage_dp{}".format(
+                    self.dipole[i]), linewidth=1)
+
+        #         y =  dp[:, 1]
+
+        #         X, Y = x , y
+        #         plt.plot(X, Y-Y[0],  label="lissage_dp{}".format(
+        # self.dipole[i]), linewidth=1)
+
+            choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
+                      [self.TEST - 1]))[axis_x]
+            plt.xlabel(choice)
+            plt.ylabel("I_rms")
+            plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
+                num_traj_list[traj]+1, z, self.pipe))
+
     def generate_data_for_interp(self):
 
         essai = 2
@@ -543,8 +622,8 @@ class Data_extraction:
         for cpt in self.traj_case[self.index_traj]:
             slice_traj.append(all_traj[cpt])
 
-        x_val = [np.linspace(40, 460, 1060), np.linspace(
-            40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+        x_val = [np.linspace(40.5, 460, 1270), np.linspace(
+            40.5, 157, 350), np.linspace(5, 50, 432)][self.TEST - 1]
 
         for traj in slice_traj:
 
@@ -585,15 +664,25 @@ if __name__ == '__main__':
     data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
     # alt_z = np.arange(4, 12+2, 2)
     # alt_z = np.arange(4, 12+2, 2)
-    alt_z = np.array([4])
 
-    for z in alt_z:
-        data_extraction.save_data_z(z=z)
-    data_extraction.fusion_data(alt_z)
-    data_extraction.extract_alt()
+# # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+    # alt_z = np.array([4])
+
+    # for z in alt_z:
+    #     data_extraction.save_data_z(z=z)
+    # data_extraction.fusion_data(alt_z)
+    # data_extraction.extract_alt()
+
+# %%
     # alt = data_extraction.extract_alt(gaussian_filter=True)
-    # alt = np.array(alt)
+    # i = 1
+    # data_extraction.test([5, 7], range(13), z=4, axis_x=True)
+    data_extraction.plot_dipole_traji_dipolej(
+        range(13), range(13), z=12, axis_x=True)
+    
+    # plt.figure()
+    # plt.plot(np.linspace(40, 460, 1060), alt[i])
 
     # print(np.min(alt), np.max(alt))
     # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -617,15 +706,5 @@ if __name__ == '__main__':
 
     # ax.plot_surface(X, Y, Z)
     # data_extraction.plot_dipole_traji_dipolej([i], range(1), z = 4)
-
-
-
     plt.show()
-
-    # data_extraction.plot_cartographie_v2(range(13), z = 5)
-
-    # interpolation
-    # data_extraction.generate_data_for_interp()
-    # data_extraction.save_data_z(z=4)
-
 # %%

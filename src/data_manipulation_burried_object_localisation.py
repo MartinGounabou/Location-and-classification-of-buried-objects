@@ -229,18 +229,20 @@ class Data_extraction:
                     tsec = data_dp[:, 0]*1e-3
 
                     if self.TEST == 2:
-                        dist_y = (tsec - tsec[0])*self.v_squid
+                        dist_y = (tsec - tsec[0])*self.v_squid + 40
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
 
                     elif self.TEST == 1:
-                        dist_y = (tsec - tsec[0])*self.v_squid
+                        dist_y = (tsec - tsec[0])*self.v_squid + 40
 
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
 
                     elif self.TEST == 3:
-                        dist_y = (tsec - tsec[0])*self.v_squid
+                        dist_y = (tsec - tsec[0])*self.v_squid + 40
                         y_val = np.interp(x_val, dist_y, data_dp[:, 5])
 
+    
+                    
                     dp = np.concatenate(
                         (x_val.reshape(-1, 1), y_val.reshape(-1, 1)), axis=1)
                     list_dp.append(dp)
@@ -351,7 +353,7 @@ class Data_extraction:
 
         # --------interpolation
         x_val = [np.linspace(40, 460, 1060), np.linspace(
-            40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
+            40.5, 157, 350), np.linspace(5, 50, 432)][self.TEST - 1]
 
         traj_dipole_value = cutting(traj_dipole_value, x_val)
 
@@ -571,13 +573,13 @@ class Data_extraction:
                 # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
 
                 # Moyenne glissante
-                # lissage_dp = hlp.lissage(list(Y), 20)
+                lissage_dp = hlp.lissage(list(Y), 20)
+                print("fuigafla", Y.shape, lissage_dp.shape)
+                # plt.plot(X, Y, label="dp sans filtre{}".format(
+                # self.dipole[i]), linewidth=1)
 
-                plt.plot(X, Y, label="dp sans filtre{}".format(
-                self.dipole[i]), linewidth=1)
-
-                # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                #     self.dipole[i]), linewidth=1)
+                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                    self.dipole[i]), linewidth=1)
 
             choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
                       [self.TEST - 1]))[axis_x]
@@ -586,7 +588,7 @@ class Data_extraction:
             plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
                 num_traj_list[traj]+1, z, self.pipe))
             # plt.grid()
-            plt.legend()
+            # plt.legend()
 
         # plt.show()
 
@@ -742,7 +744,7 @@ class Data_extraction:
         for cpt in self.traj_case[self.index_traj]:
             slice_traj.append(all_traj[cpt])
 
-        x_val = [np.linspace(40, 460, 1060), np.linspace(
+        x_val = [np.linspace(40, 460, 1061), np.linspace(
             40, 157, 300), np.linspace(5, 50, 432)][self.TEST - 1]
 
         for traj in slice_traj:
@@ -781,25 +783,25 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=3)
+    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
 
     alt = data_extraction.extract_alt(gaussian_filter=True)
 
-    i = 4
+    i = 1
     # x = np.linspace(40, 150, 300)
-    data_extraction.plot_dipole_traji_dipolej([i], range(13), z = 4)
+    data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 4, axis_x=True)
     
-    plt.figure()
-    plt.plot(np.linspace(40, 460, 1060), alt[i])
-    plt.xlabel("distance(x) selon x")
-    plt.ylabel("altitude en cm")
-    plt.title("Evolution de l'altitude suivant la trajectoire {}".format(i+1))
+ 
+    # plt.figure()
+    # plt.plot(np.linspace(40, 460, 1060), alt[i])
+    # plt.xlabel("distance(x) selon x")
+    # plt.ylabel("altitude en cm")
+    # plt.title("Evolution de l'altitude suivant la trajectoire {}".format(i+1))
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [1,10,12], z = 4)
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 12)
     plt.show()
 
     # data_extraction.plot_cartographie_v2(range(13), z = 5)
-
     # interpolation
     # data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
