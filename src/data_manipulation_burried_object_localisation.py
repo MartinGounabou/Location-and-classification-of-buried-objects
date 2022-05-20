@@ -4,6 +4,7 @@
 
 # %%
 from cmath import pi
+from xmlrpc.client import TRANSPORT_ERROR
 import matplotlib.pyplot as plt
 import os
 import scipy.ndimage.filters as filters
@@ -570,13 +571,13 @@ class Data_extraction:
                 # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
 
                 # Moyenne glissante
-                lissage_dp = hlp.lissage(list(Y), 20)
+                # lissage_dp = hlp.lissage(list(Y), 20)
 
-                # plt.plot(X, Y, label="dp sans filtre{}".format(
-                # self.dipole[i]), linewidth=1)
+                plt.plot(X, Y, label="dp sans filtre{}".format(
+                self.dipole[i]), linewidth=1)
 
-                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                    self.dipole[i]), linewidth=1)
+                # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                #     self.dipole[i]), linewidth=1)
 
             choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
                       [self.TEST - 1]))[axis_x]
@@ -780,14 +781,19 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=3)
 
-    # alt = data_extraction.extract_alt()
+    alt = data_extraction.extract_alt(gaussian_filter=True)
 
+    i = 4
     # x = np.linspace(40, 150, 300)
-    data_extraction.plot_dipole_traji_dipolej([6], range(13), z = 4)
+    data_extraction.plot_dipole_traji_dipolej([i], range(13), z = 4)
     
-    
+    plt.figure()
+    plt.plot(np.linspace(40, 460, 1060), alt[i])
+    plt.xlabel("distance(x) selon x")
+    plt.ylabel("altitude en cm")
+    plt.title("Evolution de l'altitude suivant la trajectoire {}".format(i+1))
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [1,10,12], z = 4)
     # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 12)
     plt.show()

@@ -55,7 +55,7 @@ class Data_extraction:
                 self.pipe = PIPE
                 
                 self.traj_case = {"pipe": range(4, 9),
-                    "no_pipe": list(range(3))+list(range(10, 13)),
+                    "no_pipe": list(range(2))+list(range(11, 13)),
                     "all_traj": range(self.traj),
                     "traj_7": [6],
                     }
@@ -89,6 +89,11 @@ class Data_extraction:
                     "no_pipe": list(range(3))+list(range(10, 13)),
                     "all_traj": range(self.traj),
                     "traj_7": [6],
+                    "traj_1": [0],
+                    "traj_9": [8],
+                    "traj_5": [4],
+                    "traj_8": [7],
+                    "traj_13": [12],
                     }
 
             elif TEST == 2:
@@ -137,8 +142,7 @@ class Data_extraction:
     
  
 
-        self.index_traj = list(self.traj_case.keys())[3]
-
+        self.index_traj = list(self.traj_case.keys())[8]
     # [data1, data2, data3 ... data_tejnum]
 
     def extract_data_frome_file(self, z, verbose=False):
@@ -623,3 +627,5 @@ if __name__ == '__main__':
     # interpolation
     # data_extraction.generate_data_for_interp()
     # data_extraction.save_data_z(z=4)
+
+# %%
