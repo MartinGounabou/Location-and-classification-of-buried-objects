@@ -189,6 +189,7 @@ class Data_extraction:
         if self.TEST == 3:
             all_traj = data_z
             path = path_pipe
+            
         else:
             all_traj = data_z[self.z.index(z)]
             path = path_z[self.z.index(z)]
@@ -626,9 +627,7 @@ class Data_extraction:
             plt.tight_layout()
             # plt.gca().invert_xaxis()
             plt.show()
-
-            plt.show()
-
+            
     def plot_cartographie_v1(self, num_dipole_list, z=5,  axis_x=True):
         traj_dipole_list = self.extract_dipole_value_traji(
             range(self.traj), z=z)  # traj_show = 17
@@ -701,7 +700,6 @@ class Data_extraction:
     def generate_data_for_interp(self):
 
         essai = 2
-
         if essai == 1:
             for z in range(5, 25, 5):
                 self.save_data_z(z=z)
@@ -713,7 +711,6 @@ class Data_extraction:
                 alt_z=alt, alt_z_val=alt_z_val)
 
         elif essai == 2:
-
             # alt = range(4,16,4)
             # for z in alt:
             #     self.save_data_z(z=z)
@@ -783,15 +780,16 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=3, PIPE=1)
 
-    alt = data_extraction.extract_alt(gaussian_filter=True)
 
-    i = 1
+    # alt = data_extraction.extract_alt(gaussian_filter=True)
+
+    # i = 1
     # x = np.linspace(40, 150, 300)
-    data_extraction.plot_dipole_traji_dipolej(range(17), range(13), z = 4, axis_x=True)
+    # data_extraction.plot_dipole_traji_dipolej([4], range(13), z = 4, axis_x=True)
     
- 
+
     # plt.figure()
     # plt.plot(np.linspace(40, 460, 1060), alt[i])
     # plt.xlabel("distance(x) selon x")

@@ -9,8 +9,6 @@ import os
 
 
 a = 0
-
-
 def handler(signum, frame):
     global a
 
