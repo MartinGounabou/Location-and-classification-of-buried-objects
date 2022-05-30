@@ -112,12 +112,18 @@ class Artificial_intelligence(Data_extraction):
                         Li.extend(
                             list(X[alt][i][j][k:k+segment_width]))
 
-                    if (k in seg_pipe) & split:
-                        X_new_pipe.append(Li)
-                        y_new_pipe.append(
-                            np.mean(altitude[i, k:k+segment_width] ))
+                    # if (k in seg_pipe) & split:
+                    #     X_new_pipe.append(Li)
+                    #     y_new_pipe.append(
+                    #         np.mean(altitude[i, k:k+segment_width] ) + 4.0)
+                    
+
+                    if i in range(4,11):
+                        x = list(range(0,100)) + list(range(300,650)) + list(range(750, 1260))
+                        b = np.random.choice(x, 45, replace=False)
+                    
                     else:
-                        y_new.append(np.mean(altitude[i, k:k+segment_width] ))
+                        y_new.append(np.mean(altitude[i, k:k+segment_width] ) + 4.0)
                         X_new.append(Li)
 
         

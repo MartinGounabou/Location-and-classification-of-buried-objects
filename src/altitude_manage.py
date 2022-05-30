@@ -539,12 +539,12 @@ class Data_extraction:
                 
                 lissage_dp = hlp.lissage(list(Y), 20)
                 
-                plt.plot(dp[:, 1], x, label="dp sans filtre{}".format(
-                self.dipole[i]), linewidth=1)
-                plt.ylim(np.max(x), np.min(x))
+                # plt.plot(dp[:, 1], x, label="dp sans filtre{}".format(
+                # self.dipole[i]), linewidth=1)
+                # plt.ylim(np.max(x), np.min(x))
                 
-                # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                #     self.dipole[i]), linewidth=1)
+                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                    self.dipole[i]), linewidth=1)
 
             choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
                       [self.TEST - 1]))[axis_x]
@@ -647,7 +647,7 @@ class Data_extraction:
         for cpt in self.traj_case[self.index_traj]:
             slice_traj.append(all_traj[cpt])
 
-        x_val = [np.linspace(40.5, 460, 1271), np.linspace(
+        x_val = [np.linspace(40.5, 460, 1270), np.linspace(
             40.5, 157, 350), np.linspace(5, 50, 432)][self.TEST - 1]
 
         for traj in slice_traj:
@@ -665,7 +665,8 @@ class Data_extraction:
                 y_val = filters.gaussian_filter1d(y_val, sigma=10)
             
 
-            all_data.append(y_val - y_val[0] + z0)
+            all_data.append(y_val - y_val[0])
+            # all_data.append(y_val - y_val[0] + z0)
 
         df = pd.DataFrame(np.array(all_data))
 
@@ -689,7 +690,7 @@ def interpolation_alt(x_val, alt, v):
 if __name__ == '__main__':
 
     data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
-    a = data_extraction.extract_dipole_value_traji([1])
+    # a = data_extraction.extract_dipole_value_traji([1])
     # data_extraction.save_data_test3()
     # alt_z = np.arange(4, 12+2, 2)
     # alt_z = np.arange(4, 12+2, 2)
@@ -712,11 +713,11 @@ if __name__ == '__main__':
     # i = 1
     # plt.figure()
     # plt.plot(alt[i])
-    # plt.show()F
+    # plt.show()
 
     # data_extraction.test(range(13), [1], z=4, axis_x=True)
-    # data_extraction.plot_dipole_traji_dipolej(
-    #     range(2), range(1), z=4, axis_x=True)
+    data_extraction.plot_dipole_traji_dipolej(
+        [4,5,1], range(13), z=4, axis_x=False)
     # print(np.min(alt), np.max(alt))
     # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
