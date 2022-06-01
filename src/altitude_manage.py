@@ -86,7 +86,8 @@ class Data_extraction:
                 self.v_opt = 3
                 self.traj_case = {"pipe": range(4, 9),
                                   "no_pipe": [0, 2] + [10,11,12],
-                                  "all_traj": range(self.traj),
+                                  "all_traj":  [0, 3] + list(range(5,13)),
+                                #   "all_traj": range(self.traj),
                                   "traj_0": [0],
                                   }
 
@@ -110,7 +111,7 @@ class Data_extraction:
                                   "all_traj": range(self.traj),
                                   "traj_14": [1],                                 
                                   }
-
+                
             elif TEST == 3:
                 self.path = os.path.abspath(
                     "../Datasets/ESSAIS 2/Tests Sol Ratissé - 3 BO/TEST 3")
@@ -120,6 +121,7 @@ class Data_extraction:
                 
                 self.traj_case = {"all_traj": range(3),
                     "no_pipe":  range(3),                               
+                             
                     }
 
             self.v_squid = 4
@@ -138,7 +140,7 @@ class Data_extraction:
                          477, 468, 482, 471, 495, 481, 479, 474, 488, 471]
         self.dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
 
-        self.index_traj = list(self.traj_case.keys())[2]
+        self.index_traj = list(self.traj_case.keys())[0]
     # [data1, data2, data3 ... data_tejnum]
 
     def extract_data_frome_file(self, z=6, verbose=False):
@@ -513,7 +515,9 @@ class Data_extraction:
     def plot_dipole_traji_dipolej(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
 
         traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
+        
 
+        
         for traj, list_dipole in enumerate(traj_dipole_value):
             fig = plt.figure()
             sns.set()
@@ -529,7 +533,7 @@ class Data_extraction:
 
                 
                 # integrale_derivee du signal
-                X, Y = hlp.integrale_derivee(x, dp[:, 1])
+                # X, Y = hlp.integrale_derivee(x, dp[:, 1])
                 # X, Y = dp[1:, 0], dp[1:, 1]
 
                 # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
@@ -537,16 +541,25 @@ class Data_extraction:
                 # Moyenne glissante
             
                 
-                lissage_dp = hlp.lissage(list(Y), 20)
+                # lissage_dp = hlp.lissage(list(Y), 20)
                 
-                # plt.plot(dp[:, 1], x, label="dp sans filtre{}".format(
-                # self.dipole[i]), linewidth=1)
-                # plt.ylim(np.max(x), np.min(x))
+                current  =  dp[2:, 5]- dp[-1,5]
+                alt = ( dp[2:, 0]-dp[2,0] )*1*1e-3+4
+                print(alt.shape)
+                plt.plot( current , alt[::-1], label="dp sans filtre{}".format(
+                self.dipole[i]), linewidth=1)
+                # plt.ylim(np.max(alt), np.min(alt))
                 
-                plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                    self.dipole[i]), linewidth=1)
+                df = pd.DataFrame(np.concatenate((current.reshape(-1,1), alt[::-1].reshape(-1,1)), axis = 1))
+    
+                df.to_csv(os.path.join(self.path_to_data_dir,
+                  "data{}_dp45_test3.csv".format(traj)), header=False, index=False)
+                
+                
+                # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                #     self.dipole[i]), linewidth=1)
 
-            choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
+            choice = ([" times "] + ([[" X (cm) "], [" Y(cm) "], [" Z(cm) "]]
                       [self.TEST - 1]))[axis_x]
             plt.xlabel(choice)
         
@@ -554,14 +567,16 @@ class Data_extraction:
             plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
                 num_traj_list[traj]+1, z, self.pipe))
             # plt.grid()
-            # plt.legend()
+            plt.legend()
 
         # plt.show()
 
     def test(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
 
         traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
+        
 
+        
         for traj, list_dipole in enumerate(traj_dipole_value):
             fig = plt.figure()
             sns.set()
@@ -575,32 +590,35 @@ class Data_extraction:
 
                 x = (tsec, x)[axis_x]
 
-#plot intergerale derivee par segment
-                x = x.reshape(-1, 10)
-                y = dp[:, 1].reshape(-1, 10)
-                X = []
-                Y = []
-                for cpt in range(y.shape[0]):
-                    # a, b = x[cpt], hlp.lissage(y[cpt] - y[0, 0], L=3)
-                    a, b = hlp.integrale_derivee(x[cpt], y[cpt], initial=None)
-                    X.extend(a.tolist())
-                    Y.extend(b.tolist())
+                
+                # integrale_derivee du signal
+                # X, Y = hlp.integrale_derivee(x, dp[:, 1])
+                # X, Y = dp[1:, 0], dp[1:, 1]
 
-                plt.plot(Y,  label="lissage_dp{}".format(
-                    self.dipole[i]), linewidth=1)
+                # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
 
-        #         y =  dp[:, 1]
+                # Moyenne glissante
+            
+                
+                # lissage_dp = hlp.lissage(list(Y), 20)
+                
 
-        #         X, Y = x , y
-        #         plt.plot(X, Y-Y[0],  label="lissage_dp{}".format(
-        # self.dipole[i]), linewidth=1)
+                # plt.ylim(np.max(alt), np.min(alt))
 
-            choice = ([" times "] + ([[" X (cm)"], ["Y(cm) "], ["Z(cm) "]]
+                
+                return dp[1:, 1]
+                # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
+                #     self.dipole[i]), linewidth=1)
+
+            choice = ([" times "] + ([[" X (cm) "], [" Y(cm) "], [" Z(cm) "]]
                       [self.TEST - 1]))[axis_x]
             plt.xlabel(choice)
+        
             plt.ylabel("I_rms")
             plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
                 num_traj_list[traj]+1, z, self.pipe))
+            # plt.grid()
+            plt.legend()
 
     def generate_data_for_interp(self):
 
@@ -665,8 +683,7 @@ class Data_extraction:
                 y_val = filters.gaussian_filter1d(y_val, sigma=10)
             
 
-            all_data.append(y_val - y_val[0])
-            # all_data.append(y_val - y_val[0] + z0)
+            all_data.append(y_val - y_val[0] + z0)
 
         df = pd.DataFrame(np.array(all_data))
 
@@ -702,9 +719,12 @@ if __name__ == '__main__':
     # for z in alt_z:
     #     data_extraction.save_data_z(z=z)
     # data_extraction.fusion_data(alt_z)
-    # alt = data_extraction.extract_alt()
-
-    # print(np.min(np.array(alt)))
+    alt = data_extraction.extract_alt(z0=8)[1]
+    dp = data_extraction.test([0], [10], z = 4).reshape(1,-1)
+    
+    for z in ( list(range(4,14,2)) + [20,25,50] ):
+        dp_i = data_extraction.test([0], [10], z = z)
+        dp = np.concatenate((dp, dp_i.reshape(1,-1)), axis=0)
 
 # %%
     # print(np.min(alt)+4)
@@ -716,8 +736,10 @@ if __name__ == '__main__':
     # plt.show()
 
     # data_extraction.test(range(13), [1], z=4, axis_x=True)
-    data_extraction.plot_dipole_traji_dipolej(
-        [4,5,1], range(13), z=4, axis_x=False)
+    
+    # data_extraction.plot_dipole_traji_dipolej(
+    #     range(4), [10], z=4, axis_x=True)
+    
     # print(np.min(alt), np.max(alt))
     # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
