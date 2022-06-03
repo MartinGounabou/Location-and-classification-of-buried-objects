@@ -319,49 +319,22 @@ class Data_extraction:
                                 dp27.shape[0], dp28.shape[0], dp36.shape[0], dp37.shape[0], dp38.shape[0],
                                 dp45.shape[0], dp58.shape[0], dp68.shape[0]])
 
-            # traj_dipole_value.append(
-            #     [dp13, dp16, dp36])
-
-            # traj_dipole_value.append(
-            #     [dp13, dp16, dp36, dp18, dp38, dp68])
-
-            # traj_dipole_value.append(
-            #     [dp13, dp16, dp36, dp18, dp38, dp68, dp26, dp28])
-
-            # traj_dipole_value.append(
-            #      [dp13, dp16, dp36, dp18, dp38, dp68, dp26, dp28, dp12])
-
-            # traj_dipole_value.append(
-            #      [dp13, dp16, dp36, dp18, dp38, dp68, dp26, dp28, dp12, dp27])
-
-            # traj_dipole_value.append(
-            #     [dp13, dp16, dp36, dp18, dp38, dp68, dp26, dp28 , dp12 , dp27, dp37, dp45, dp58])
-
-            # traj_dipole_value.append(
-            #     [dp12])
 
             traj_dipole_value.append(
                 [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
 
-            # traj_dipole_value.append(
-            #      [dp13])
+
         # --------echantillonnage
         min_signal_shape = min(signal_shape)
 
         print(" min ", min_signal_shape)
-        # print(" min signal shape = " , min_signal_shape)
-        # traj_dipole_value = echantillonnage(traj_dipole_value, min_signal_shape)
 
         # --------interpolation
         x_val = [np.linspace(40, 460, 1060), np.linspace(
             40.5, 157, 350), np.linspace(5, 50, 432)][self.TEST - 1]
 
         traj_dipole_value = cutting(traj_dipole_value, x_val)
-
-        # plt.plot((dp13[:,0]-dp13[0,0])*self.v_squid*1e-3, dp13[:,5])
-
-        # plt.show()
-
+        
         return traj_dipole_value
 
     def interpolation_courbe(self, list_signal,  alt_z, alt_z_val):
@@ -780,23 +753,11 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=3, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
+
+    data_extraction.plot_dipole_traji_dipolej([4], range(13), z = 4, axis_x=True)
 
 
-    # alt = data_extraction.extract_alt(gaussian_filter=True)
-
-    # i = 1
-    # x = np.linspace(40, 150, 300)
-    # data_extraction.plot_dipole_traji_dipolej([4], range(13), z = 4, axis_x=True)
-    
-
-    # plt.figure()
-    # plt.plot(np.linspace(40, 460, 1060), alt[i])
-    # plt.xlabel("distance(x) selon x")
-    # plt.ylabel("altitude en cm")
-    # plt.title("Evolution de l'altitude suivant la trajectoire {}".format(i+1))
-    # data_extraction.plot_dipole_traji_dipolej(range(5,8), [1,10,12], z = 4)
-    # data_extraction.plot_dipole_traji_dipolej(range(5,8), [2,5,9], z = 12)
     plt.show()
 
     # data_extraction.plot_cartographie_v2(range(13), z = 5)

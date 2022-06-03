@@ -16,7 +16,6 @@ from pyparsing import col
 def drop_duplicate(data):
     
     uniq, index = np.unique(data[0], return_index=True)
-    
     return data[0][index], data[1][index], data[2][index], data[3][index]
 
 

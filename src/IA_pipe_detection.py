@@ -4,6 +4,7 @@
 import os
 import pickle
 from tkinter.tix import Tree
+from joblib import Memory
 
 
 
@@ -102,31 +103,33 @@ class Artificial_intelligence(Data_extraction):
         X_new_pipe = []
         y_new_pipe = []
 
+        memory = np.array([0]*45).reshape(45,1)
         # labelisation
         alt_z = [4, 6, 8, 10, 12, 14]
         for alt in range(X.shape[0]):
             for i in range(self.traj_num):
-                for k in range(int(self.signal_shape-segment_width)):
-                    Li = []
-                    for j in range(self.dp_n):
-                        Li.extend(
-                            list(X[alt][i][j][k:k+segment_width]))
-
-                    # if (k in seg_pipe) & split:
-                    #     X_new_pipe.append(Li)
-                    #     y_new_pipe.append(
-                    #         np.mean(altitude[i, k:k+segment_width] ) + 4.0)
-                    
-
-                    if i in range(4,11):
-                        x = list(range(0,100)) + list(range(300,650)) + list(range(750, 1260))
-                        b = np.random.choice(x, 45, replace=False)
-                    
-                    else:
+                if i in range(3,9):
+                    x = list(range(0,100)) + list(range(300,650)) + list(range(750, 1260))
+                    b = np.random.choice(x, 45, replace=False)
+                    memory = np.concatenate((memory, b.reshape(45,1)), axis=1)
+                    for k in b :
+                        Li = []
+                        for j in range(self.dp_n):
+                            Li.extend(
+                                list(X[alt][i][j][k:k+segment_width]))
+                        y_new.append(np.mean(altitude[i, k:k+segment_width] ) + 4.0)
+                        X_new.append(Li)
+                else :
+                    for k in range(int(self.signal_shape-segment_width)):
+                        Li = []
+                        for j in range(self.dp_n):
+                            Li.extend(
+                                list(X[alt][i][j][k:k+segment_width]))
                         y_new.append(np.mean(altitude[i, k:k+segment_width] ) + 4.0)
                         X_new.append(Li)
 
-        
+        X_new_pipe = X_new
+        y_new_pipe = y_new
         X_new = np.array(X_new)
         X_new_pipe = np.array(X_new_pipe)
         y_new = np.array(y_new)
@@ -140,7 +143,8 @@ class Artificial_intelligence(Data_extraction):
 
         df_features = pd.DataFrame(X_new.reshape(X_new.shape[0], -1))
         df_labels = pd.DataFrame(y_new)
-
+        df_memory = pd.DataFrame(memory)
+        
         if not os.path.exists(self.path_to_data_dir):
             os.mkdir(self.path_to_data_dir)
 
@@ -148,6 +152,9 @@ class Artificial_intelligence(Data_extraction):
                            "features_T{}_P{}_{}.csv".format(self.TEST, self.pipe, self.index_traj)), header=False, index=False)
         df_labels.to_csv(os.path.join(self.path_to_data_dir,
                          "labels_T{}_P{}_{}.csv".format(self.TEST, self.pipe, self.index_traj)), header=False, index=False)
+
+        df_memory.to_csv(os.path.join(self.path_to_data_dir,
+                                "memory.csv"), header=False, index=False)
 
         return X_new_pipe, y_new_pipe
 
@@ -447,16 +454,17 @@ class Artificial_intelligence(Data_extraction):
         
         for alt in range(X.shape[0]):
             for i in range(self.traj_num):
-                for k in range(int(self.signal_shape/segment_width)):
+                for k in range(int(self.signal_shape-segment_width)):
 
                     Li = []
                     for j in range(self.dp_n):
                         Li.extend(
-                            list(X[alt][i][j][segment_width*k:segment_width*(k+1)]) )
+                            list(X[alt][i][j][k:k+segment_width]) )
 
                     X_new.append(Li)
                     y_new.append(
-                        np.mean(altitude[i, segment_width*k:segment_width*(k+1)])+ 4)
+                        # np.mean(altitude[i, segment_width*k:segment_width*(k+1)])+ 4)
+                        np.mean(altitude[i, k:k+segment_width])+ 4)
             # y_new_list.append(y_new)
             
         X_new = np.array(X_new)
@@ -476,7 +484,7 @@ if __name__ == '__main__':
     
 # %%
     X_test1, y_test1 = artificial_intelligence.features_extraction_segment_sliding(
-        segment_width=10, split=False)
+        segment_width=1, split=False)
 
     # X_test_,  y_test_ = artificial_intelligence.features_extraction_segment(
     #     segment_width=10)  # generate features and labels
@@ -486,7 +494,7 @@ if __name__ == '__main__':
 # %%
 
     X_train, y_train,  X_test2, y_test2, indice_test = artificial_intelligence.data_split(
-        merge_data= True, split=False)  # use ExT2P1 data
+        merge_data= False, split=False)  # use ExT2P1 data
 
     # # # X_train, y_train = artificial_intelligence.features_extract_test3()
     # # # X_train = X_train.reshape(-1,1)
@@ -557,16 +565,20 @@ if __name__ == '__main__':
     # plt.plot(model.score_samples(X_test), label=f"{i}")
     # plt.legend()
 
-
     model.fit(X_train, y_train)
-
-
 # %%
 
-    z, i = 4, 7
+    z, i = 1, 1
+    j = 4
     X_test, y_test = artificial_intelligence.traj_for_test(i=i)
-    
-    
+
+    memory = pd.read_csv(os.path.join(artificial_intelligence.path_to_data_dir,
+                    "memory.csv"), header=None, index_col=None)
+        
+    memory = memory.iloc[:, j]
+
+    memory = np.array(memory).ravel()
+  
     # # X_test, y_test = artificial_intelligence.traj_for_test_test3(z=z, i=i)
     # # X_test, y_test = X_train, y_train
 
@@ -625,6 +637,7 @@ if __name__ == '__main__':
 
     plt.plot(np.linspace(40, 460, error.shape[0]), y_test, label='alt_true')
     plt.plot(np.linspace(40, 460, error.shape[0]), y_pred, label='alt_pred')
+    # plt.scatter((memory/1270)*420 + 40, y_pred[memory], s=2, c="green")
     plt.xlabel("distance (cm) selon x")
     plt.ylabel("alttitude")
     plt.title(
