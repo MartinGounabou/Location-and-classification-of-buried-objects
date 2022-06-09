@@ -4,6 +4,7 @@
 
 # %%
 
+from cmath import nan
 from sys import dont_write_bytecode
 import matplotlib.pyplot as plt
 import os
@@ -13,6 +14,7 @@ import numpy as np
 import scipy as sp
 import pandas as pd
 from scipy import interpolate
+from sklearn.preprocessing import KBinsDiscretizer
 
 import utils.augmentation as aug
 import utils.helper as hlp
@@ -91,6 +93,7 @@ class Data_extraction:
                                 #   "all_traj": range(self.traj),
                                   "traj_0": [0],
                                   }
+                self.v_squid = 3  
 
             elif TEST == 2:
                 self.path = os.path.abspath(
@@ -105,13 +108,14 @@ class Data_extraction:
 
                 self.path_altitude_echosondeur = os.path.join(
                     os.path.split(self.path)[0], 'TOF', pipe_path)
-                self.v_opt = 4
+                self.v_opt = 3
 
                 self.traj_case = {"pipe": range(5, 10),
                                   "no_pipe": list(range(2))+list(range(15, 17)),
                                   "all_traj": range(self.traj),
                                   "traj_14": [1],                                 
                                   }
+                self.v_squid = 3
                 
             elif TEST == 3:
                 self.path = os.path.abspath(
@@ -125,10 +129,9 @@ class Data_extraction:
                     "all_traj": range(3),                            
                              
                     }
+                self.v_squid = 1
 
-            self.v_squid = 4
-
-        print(" ESSAI {} and TEST {} ".format(ESSAI, TEST))
+        print("ESSAI {} and TEST {} ".format(ESSAI, TEST))
 
         self.path_to_extracted = os.path.join(os.getcwd(), "EXTRACTED")
         self.path_to_data_dir = os.path.join(os.getcwd(), "DATA")
@@ -140,12 +143,30 @@ class Data_extraction:
                          128, 120, 121, 122, 134, 132, 130, 124, 122, 122]
         self.ech_cutf = [477, 515, 496, 480, 507, 505, 530,
                          477, 468, 482, 471, 495, 481, 479, 474, 488, 471]
-        self.dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
+        
+        # self.dipole = [12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68]
+        # self.longuer_dipole = [32 ,64 ,94 ,113,99 ,94 ,99 ,113,99 ,94 ,64, 47 ,64]  # longueur grand squid a diviser par 5 pour petit
+             
+        self.dipole = np.array([12, 13, 16, 18, 26, 27, 28, 36, 37, 38, 45, 58, 68])
+        self.longuer_dipole = np.array([32 ,64 ,94 ,113,99 ,94 ,99 ,113,99 ,94 ,64, 47 ,64])  
+        self.color =  np.array([ "green", "red", "blue", "black", "cyan", "blue", 
+             "cyan", "black", "cyan", "blue", "red", "yellow", "red" ])
+        
+        id_sort = np.argsort(self.longuer_dipole)
 
+        self.longuer_dipole = self.longuer_dipole[id_sort]/5
+        self.dipole = self.dipole[id_sort]
+        
+        self.color = self.color[id_sort]
+        
+        
+        print(self.dipole, "aiomfh")
+        
+    
         self.index_traj = list(self.traj_case.keys())[2]
         
         self.x_val = [np.linspace(40.5, 460, 1271), np.linspace(
-            40.5, 157, 350), np.linspace(4, 49.5, 432)][self.TEST - 1]
+            40.5, 157, 350), np.linspace(49.87, 4.1, 430)][self.TEST - 1]
         
         sns.set()
     # [data1, data2, data3 ... data_tejnum]
@@ -266,9 +287,13 @@ class Data_extraction:
 
                     elif self.TEST == 3:
                         self.v_squid = 1
-                        dist_y = (tsec - tsec[0])*self.v_squid + 4
-                        y_val = np.interp(x_val, dist_y, data_dp[:, 5])
-
+                        dist_y = 50 - ( tsec - tsec[0] )*self.v_squid 
+                        # y_val = np.interp(x_val, dist_y, data_dp[:, 5])
+                
+                        f = interpolate.interp1d(dist_y, data_dp[:, 5], kind='linear', fill_value="extrapolate")
+           
+                        y_val = f(x_val)
+ 
                     # y_val = hlp.lissage(list(y_val), 20)
                     dp = np.concatenate(
                         (x_val.reshape(-1, 1), y_val.reshape(-1, 1)), axis=1)
@@ -347,9 +372,11 @@ class Data_extraction:
                                 dp45.shape[0], dp58.shape[0], dp68.shape[0]])
 
 
-            traj_dipole_value.append(
-                [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
+            # traj_dipole_value.append(
+            #     [dp12, dp13, dp16, dp18, dp26, dp27, dp28, dp36, dp37, dp38, dp45, dp58, dp68])
 
+            traj_dipole_value.append(
+                [dp12, dp58, dp13, dp45, dp68, dp16, dp27, dp38, dp26, dp28, dp37, dp18, dp36])
 
         # --------echantillonnage
         min_signal_shape = min(signal_shape)
@@ -358,8 +385,6 @@ class Data_extraction:
 
         # traj_dipole_value = echantillonnage(traj_dipole_value, min_signal_shape)
 
-        if self.TEST == 3 :
-            return traj_dipole_value
         
         # --------interpolation
         x_val = self.x_val
@@ -493,56 +518,81 @@ class Data_extraction:
     def plot_dipole_traji_dipolej(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
 
         traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
-        
-        
+
         for traj, list_dipole in enumerate(traj_dipole_value):
-            # fig = plt.figure()
+            fig = plt.figure()
             sns.set()
 
-            for i in num_dipole_list:
+            for i, c in zip(num_dipole_list, self.color):
 
                 dp = list_dipole[i]
 
                 x = dp[:, 0]
                 tsec = range(dp.shape[0])
 
-                x = (tsec, x)[axis_x]
-
-                
-                # integrale_derivee du signal
-                # X, Y = hlp.integrale_derivee(x, dp[:, 1])
-                # plt.plot(X, Y,  label="dp{}".format(self.dipole[i]), linewidth=1)
-
-                # Moyenne glissante     
-                # lissage_dp = hlp.lissage(list(Y), 20)
-                # plt.plot(X, lissage_dp, label="lissage_dp{}".format(
-                #     self.dipole[i]), linewidth=1)
-                
+                x = (tsec, x)[axis_x]  
                 # plot and save test 3
-                current  =  dp[2:, 5]
-                alt = 50 - ( dp[2:, 0] - dp[2,0] )*1*1e-3 
-    
-                current = hlp.lissage(list(current), 10)
-    
-                plt.plot( alt, current, label="dp sans filtre{}".format(
-                self.dipole[i]), linewidth=1)
-                
-              
-                # df = pd.DataFrame(np.concatenate((current.reshape(-1,1), alt.reshape(-1,1)), axis = 1))
-                # df.to_csv(os.path.join(self.path_to_data_dir,
-                #   "data{}_dp45_test3_lissage.csv".format(traj)), header=False, index=False)
 
-            choice = ([" times "] + ([[" X (cm) "], [" Y(cm) "], [" Z(cm) "]]
+            
+                ############# set the beginning point 
+                
+                # current = current - current[200] + 0.14
+                # plt.plot( current , alt  , label="dp{}, traj{}".format(
+                # self.dipole[i], num_traj_list[traj]+1), color=c , linewidth=1)
+                
+                ############## set the beginning point 
+                
+                current = dp[:,1]
+                alt = x
+                
+                # current = hlp.lissage(list(current), 20)
+                
+                for cpt in range(100, 200) :
+                    
+                    current[cpt] = np.mean(current[100:200])
+                    
+                   
+                    
+                a = current[150]
+                b = current[-50]
+                
+                print(alt[150], alt[-50])
+                A0 = 0.14
+                A1 = 0.135  
+                
+                # M = np.array([[a, 1], [b, 1]])
+                # coef = np.linalg.inv(M)@np.array([[A0], [A1]])
+                
+                M = np.array([[a, 1]]).reshape(-1,1)
+                coef = np.linalg.inv(M)@np.array([A0])    
+        
+                
+                coef = coef.flatten()
+                current = current*coef[0] + coef[1]
+             
+                
+                plt.plot(current , alt  , label="dp{}, L :{} cm".format(
+                self.dipole[i], self.longuer_dipole[i]), color=c,  linewidth=1)
+                
+            choice = ([" times "] + ([[" X (cm) "], [" Y(cm) "], [" I_rms (mA) "]]
                       [self.TEST - 1]))[axis_x]
+            
             plt.xlabel(choice)
-            plt.ylabel("I_rms")
+            plt.ylabel("Z (cm) ")
             plt.title(" Traj : {}, alt : {} cm, pipe : {} ".format(
                 num_traj_list[traj]+1, z, self.pipe))
+            
+            plt.title("Evolution de l'altitude en fonction du courant traj {} après une calibration  \n en utilisant commme référence A0(33.86 cm, 0.14mA) et A1(9.32cm, 0.135mA) ".format(traj+1))
             # plt.grid()
             plt.legend()
 
+        # z = pd.DataFrame(Z.T)
+        # z.to_csv(os.path.join(self.path_to_data_dir,
+        #     "calibration.csv"), header=False, index=False)               
+        # z.to_csv(os.path.join(self.path_to_data_dir,
+        #     "calibration.csv"), header=False, index=False)
 
-    def save_current_for_test(self, num_traj_list, num_dipole_list, z=5, axis_x=True):
+    def save_current_for_test(self, num_traj_list, num_dipole_list, z=4, axis_x=True):
         
         traj_dipole_value = self.extract_dipole_value_traji(num_traj_list, z=z)
         DP = np.zeros((traj_dipole_value[0][0].shape[0],1))
@@ -555,7 +605,7 @@ class Data_extraction:
                 
         DP = pd.DataFrame(DP[:,1:])
         DP.to_csv(os.path.join(self.path_to_data_dir,
-            "X_test_traj_13_z14.csv"), header=False, index=False)
+            "X_T{}_P{}_Z{}.csv".format(self.TEST, self.pipe, z)), header=False, index=False)
 
     def generate_data_for_interp(self):
 
@@ -602,9 +652,6 @@ class Data_extraction:
         for cpt in self.traj_case[self.index_traj]:
             slice_traj.append(all_traj[cpt])
 
-        x_val = [np.linspace(40.5, 460, 1270), np.linspace(
-            40.5, 157, 350), np.linspace(4.5, 50, 432)][self.TEST - 1]
-        
         
         x_val = self.x_val
         for traj in slice_traj:
@@ -619,15 +666,15 @@ class Data_extraction:
             x_val, y_val = interpolation_alt(x_val, data, self.v_opt)
             
             if gaussian_filter:
-                y_val = filters.gaussian_filter1d(y_val, sigma=10)
+                y_val = filters.gaussian_filter1d(y_val, sigma=20)
             
 
             all_data.append(y_val - y_val[0] + z0)
 
-        df = pd.DataFrame(np.array(all_data))
+        df = pd.DataFrame(np.array(all_data).T)
 
         df.to_csv(os.path.join(self.path_to_data_dir,
-                               "alt_T{}_P{}_{}.csv".format(self.TEST, self.pipe, self.index_traj)), header=False, index=False)
+                               "alt_T{}_P{}_Z{}.csv".format(self.TEST, self.pipe, z0)), header=False, index=False)
 
         print(
             f"nombre de trajectoires selectionnées pour l'altitude = {len(self.traj_case[self.index_traj])}")
@@ -645,7 +692,17 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=3, PIPE=1)
+    data_extraction = Data_extraction (ESSAI=2, TEST=3, PIPE=1)
+    
+
+
+    # for z in list(range(4,12,2))  :
+    #     data_extraction.save_current_for_test(range(17), [10], z=z)
+    #     data_extraction.extract_alt(z0=z)
+        
+    
+    
+    
     # a = data_extraction.extract_dipole_value_traji([1])
     # data_extraction.save_data_test3()
     # alt_z = np.arange(4, 12+2, 2)
@@ -660,9 +717,10 @@ if __name__ == '__main__':
     # data_extraction.fusion_data(alt_z)
     
  
-    # alt = data_extraction.extract_alt(z0=4)
-    # plt.plot(alt[0])
-    # plt.show()
+    # alt = data_extraction.extract_alt(z0=6)
+    # plt.plot( np.linspace(
+    #         40.5, 157, 350), alt[4])
+
     
     
     # dp = data_extraction.test([0], [10], z = 4).reshape(1,-1)
@@ -679,7 +737,7 @@ if __name__ == '__main__':
     # for z in ( list(range(4,14,2)) + [20,25,50] ):
     #     dp_i = data_extraction.test([0], [10], z = z)
     #     dp = np.concatenate((dp, dp_i.reshape(1,-1)), axis=0)
-        
+    
 # %%
     # print(np.min(alt)+4)
     # print(np.max(alt)+4)
@@ -691,11 +749,13 @@ if __name__ == '__main__':
 
     # data_extraction.test(range(13), [1], z=4, axis_x=True)
     
-    data_extraction.plot_dipole_traji_dipolej(
-        range(3), [10], z=4, axis_x=True)
+    # # # data_extraction.plot_dipole_traji_dipolej(
+    # # #     [6,11], [ 1, 12], z=4, axis_x=True)
     
-    # # data_extraction.plot_dipole_traji_dipolej(
-    # # range(13), [10], z=14, axis_x=True)
+    
+    # # plt.figure()
+    data_extraction.plot_dipole_traji_dipolej(
+    range(4), range(13), z=4, axis_x=True)
     
     
     # print(np.min(alt), np.max(alt))

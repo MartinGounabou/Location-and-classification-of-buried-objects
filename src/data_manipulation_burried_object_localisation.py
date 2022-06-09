@@ -753,9 +753,9 @@ def interpolation_alt(x_val, alt, v):
 # %% define a box
 if __name__ == '__main__':
 
-    data_extraction = Data_extraction(ESSAI=2, TEST=1, PIPE=1)
+    data_extraction = Data_extraction(ESSAI=2, TEST=2, PIPE=1)
 
-    data_extraction.plot_dipole_traji_dipolej([4], range(13), z = 4, axis_x=True)
+    data_extraction.plot_dipole_traji_dipolej(range(17), [10], z = 8, axis_x=True)
 
 
     plt.show()
