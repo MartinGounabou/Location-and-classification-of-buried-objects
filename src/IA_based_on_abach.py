@@ -5,6 +5,7 @@ from turtle import color
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from psutil import AIX
 
 import scipy as sp
 from matplotlib import collections as mc
@@ -55,9 +56,9 @@ if __name__ == '__main__' :
     X2 = np.array(X2, dtype=np.float64).reshape(-1,1)
     y2 = np.array(y2, dtype=np.float64)
 
-    X_train, y_train = X1[300:], y1[300:] 
+    X_train, y_train =  X1[300:],  y1[300:]
     # X_train, y_train = shuffle(X_train, y_train)
-    
+  
     
     param_grid = {
     'n_estimators': [10,50,100],
@@ -72,10 +73,11 @@ if __name__ == '__main__' :
     'warm_start': [True, False],
 }
     
-    # model = DecisionTreeRegressor()
-    # # model = LocalOutlierFactor(novelty=True, n_neighbors=25 )
-    model =  svm.OneClassSVM(nu=0.1, kernel='rbf', gamma=0.00005) 
-    # model = IsolationForest( )
+    
+ 
+    
+    model = ExtraTreesRegressor()
+ 
 
 
     # gcv = GridSearchCV(model,param_grid,cv=5,n_jobs=-1, verbose=2).fit(X_train.reshape(-1,1), y_train)
@@ -84,23 +86,11 @@ if __name__ == '__main__' :
     
     
     
-# %%
-    
-    plt.plot(X_train, y_train)
+
 #%%
     sns.set()
-    # model.fit(X_train , y_train)
-    
-    
-    model.fit(X_train)
+    model.fit(X_train , y_train)
 
-    X_test = X2
-    y_test  = y2
-    
-    y_pred = model.predict(X_train.reshape(-1,1))
-    plt.plot(y_pred)
-    plt.figure()
-    
     # plt.plot(X2, y2, label = "y_test")
     # plt.plot(X2, y, label = "y_pred")
     # plt.title("Evaluation traj 2, Test 3 ( id 8 ) ")
@@ -144,56 +134,48 @@ if __name__ == '__main__' :
         
 
         X_test = np.array(X_test, dtype=np.float64).reshape(-1,1)
+ 
+        w = 1271
+        y_pred = y_pred[:w]
+        alt = alt[:w]
+        
 
-        y_pred = model.predict(X_test.reshape(-1,1))
+        # plt.figure()
+        # plt.plot(X_test, label="".format(traj))
         
-        plt.plot(y_pred)
+        fig, ax = plt.subplots(1,2, figsize=(12,4))
+        ax = ax.flatten()
+
+        # x_val = np.linspace( 40.5, 157, 350)
+        x_val = np.linspace( 40, 460, 1271)
         
-        plt.title(f"{traj}")
-        plt.figure()
+        # ax[0].plot(x_val, hlp.standardization(y_pred), label="y_pred")
+        # ax[0].plot(x_val, hlp.standardization(alt), label="alt")  
+        ax[0].plot(x_val,  y_pred, label="y_pred")
+        ax[0].plot(x_val,  alt, label="alt")  
+        
+        ax[0].set_xlabel(' X (cm) ')
+        ax[0].set_ylabel(' Z (cm) ')
+        ax[0].legend(loc='right')
+
+        # ax[1].plot(x_val , (y_pred-alt)/alt, label = 'erreur relative')
+        ax[1].plot(x_val , X_test, label = 'erreur relative')
+        
+
+
+        ax[1].set_xlabel(' X (cm) ')
+        ax[1].set_ylabel(' Z (cm) ')
+
+        plt.suptitle("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
+        plt.legend()
+        
+        
+        # plt.savefig("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
          
         
 # %%   
     """
-    w = 1271
-    y_pred = y_pred[:w]
-    alt = alt[:w]
-    
-
-    # plt.figure()
-    # plt.plot(X_test, label="".format(traj))
-    
-    fig, ax = plt.subplots(1,2, figsize=(12,4))
-    ax = ax.flatten()
-
-    x_val = np.linspace( 40.5, 157, 350)
-    # x_val = np.linspace( 40, 460, 1271)
-    
-    ax[0].plot(X_test)
-    ax[1].plot(y_pred)
-    
-    # ax[0].plot(x_val, hlp.standardization(y_pred), label="y_pred")
-    # ax[0].plot(x_val, hlp.standardization(alt), label="alt")  
-    # # ax[0].plot(x_val,  y_pred, label="y_pred")
-    # # ax[0].plot(x_val,  alt, label="alt")  
-    
-    # # ax[0].set_xlabel(' X (cm) ')
-    # # ax[0].set_ylabel(' Z (cm) ')
-    # # ax[0].legend(loc='right')
-
-    # # # ax[1].plot(x_val , (y_pred-alt)/alt, label = 'erreur relative')
-    # # ax[1].plot(x_val , X_test, label = 'erreur relative')
-    
-
-
-    # # ax[1].set_xlabel(' X (cm) ')
-    # # ax[1].set_ylabel(' Z (cm) ')
-
-    # # plt.suptitle("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
-    # # plt.legend()
-    
-    
-    # plt.savefig("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
+   
 
     # plt.figure()
     # plt.scatter(X_test, alt)
@@ -207,17 +189,7 @@ if __name__ == '__main__' :
 # from scipy import interpolate
 # f = interpolate.interp1d(X_train, y_train, fill_value="extrapolate")
 # y = f(X_test.ravel())
-# %%
-
-    X_test = X_test[:200]
-    alt = alt[:200]
-    id = alt.argsort()
-    alt = alt[id]
-    X_test = X_test[id]
-    plt.scatter(alt, X_test)
-
-
-    
+ 
     
 # %%
 
