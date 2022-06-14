@@ -1,5 +1,6 @@
 # %%
 
+from cProfile import label
 from code import interact
 from statistics import mode
 from tkinter.tix import X_REGION
@@ -28,6 +29,7 @@ from sklearn.svm import OneClassSVM
 from sklearn.cluster import KMeans
 
 from sklearn.pipeline import make_pipeline
+
 from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.utils import shuffle
@@ -65,17 +67,16 @@ if __name__ == '__main__' :
     
     # X_train = np.concatenate(( hlp.standardization(X_train.reshape(-1,1)), hlp.standardization(y_train.reshape(-1,1))), axis = 1)
     X_train =  hlp.standardization(X_train.reshape(-1,1)) - hlp.standardization(y_train.reshape(-1,1))
+    # X_train =  hlp.standardization(X_train.reshape(-1,1)) - hlp.standardization(y_train.reshape(-1,1))
     # X_train =  hlp.standardization(X_train.reshape(-1,1)) 
     
-        
-
 # %%
 
     param_grid = {'kernel' : ['rbf'], 'gamma' : [0.001, 0.01, 0.1, 1], 'nu': [0.001, 0.01, 0.1, 1]}
 
  
-    # model = LocalOutlierFactor(novelty=True, n_neighbors=500 )   # 400 for (I-alt) # 1000 for I
-    model =  svm.OneClassSVM(nu=0.1, kernel='rbf', gamma=0.00005) 
+    model = LocalOutlierFactor(novelty=True, n_neighbors=800 )   # 400 for (I-alt) # 1000 for I
+    # model =  svm.OneClassSVM(nu=0.1, kernel='rbf', gamma=0.00005) 
     # model = IsolationForest( )
     # model  = KMeans(n_clusters=2, random_state=0)
  
@@ -118,7 +119,6 @@ if __name__ == '__main__' :
     
         X_test = np.array(X_test, dtype=np.float64).reshape(-1,1)
     
-        a = X_test
         # X_test =  hlp.standardization(X_test.reshape(-1,1))  
         X_test =  hlp.standardization(X_test.reshape(-1,1)) - hlp.standardization(alt.reshape(-1,1)) 
         # X_test = np.concatenate(( hlp.standardization(X_test.reshape(-1,1)), hlp.standardization(alt.reshape(-1,1))), axis = 1)
@@ -131,15 +131,19 @@ if __name__ == '__main__' :
         ax = ax.flatten()
 
         # x_val = np.linspace( 40.5, 157, 350)
+        x_val = np.linspace( 40, 460, 1271)
         
-        ax[0].plot(hlp.standardization(X_test[:,0].reshape(-1,1)))
-        ax[0].plot(hlp.standardization(a))
-        ax[0].plot(hlp.standardization(alt))
+        ax[0].plot(x_val, X_test, label="X_test = error(current, alt)")
         # ax[0].plot( hlp.standardization(alt.reshape(-1,1)), label="alt")  
         # ax[1].plot(y_pred, label = 'erreur relative')
-        ax[1].plot( y_pred, label = 'erreur relative')
-        ax[2].plot( model.decision_function(X_test), label = 'erreur relative')
+        ax[1].plot(x_val,  y_pred, label = 'y_pred')
+        ax[2].plot(x_val, model.decision_function(X_test), label = 'scores')
+        ax[0].legend()
+        ax[1].legend( )
+        ax[2].legend( )
         
-        plt.suptitle("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj, TEST, PIPE, Z))
-     
+        plt.suptitle("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
+  
+        plt.savefig("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
+         
  # %%

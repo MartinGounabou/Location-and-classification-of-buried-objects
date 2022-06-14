@@ -15,6 +15,7 @@ import scipy as sp
 import pandas as pd
 from scipy import interpolate
 from sklearn.preprocessing import KBinsDiscretizer
+from sqlalchemy import false
 
 import utils.augmentation as aug
 import utils.helper as hlp
@@ -661,7 +662,7 @@ class Data_extraction:
             x_val, y_val = interpolation_alt(x_val, data, self.v_opt)
             
             if gaussian_filter:
-                y_val = filters.gaussian_filter1d(y_val, sigma=20)
+                y_val = filters.gaussian_filter1d(y_val, sigma=5)
             
 
             all_data.append(y_val - y_val[0] + z0)
@@ -688,9 +689,9 @@ if __name__ == '__main__':
 
     data_extraction = Data_extraction (ESSAI=2, TEST=1, PIPE=1)
     
-    # for z in list(range(4,12,2))  :
-    #     data_extraction.save_current_for_test(range(17), [10], z=z)
-    #     data_extraction.extract_alt(z0=z)
+    for z in list(range(4,12,2)) + [12,14,18,30]  :
+        # data_extraction.save_current_for_test(range(17), [10], z=z)
+        data_extraction.extract_alt(z0=z, gaussian_filter=True)
 
     # a = data_extraction.extract_dipole_value_traji([1])
     # data_extraction.save_data_test3()
@@ -700,17 +701,13 @@ if __name__ == '__main__':
 # # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     # alt_z = np.array([4])
-
     # for z in alt_z:
     #     data_extraction.save_data_z(z=z)
-    # data_extraction.fusion_data(alt_z)
-    
- 
+    # data_extraction.fusion_data(alt_z) 
     # alt = data_extraction.extract_alt(z0=6)
     # plt.plot( np.linspace(
     #         40.5, 157, 350), alt[4])
 
-    
     
     # dp = data_extraction.test([0], [10], z = 4).reshape(1,-1)
     
@@ -738,8 +735,8 @@ if __name__ == '__main__':
 
     # data_extraction.test(range(13), [1], z=4, axis_x=True)
     
-    data_extraction.plot_dipole_traji_dipolej(
-       range(13), [0,1], z=4, axis_x=True)
+    # data_extraction.plot_dipole_traji_dipolej(
+    #    range(13), [0,1], z=4, axis_x=True)
     
     # # plt.figure()
     # data_extraction.plot_dipole_traji_dipolej(

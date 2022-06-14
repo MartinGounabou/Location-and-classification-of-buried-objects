@@ -49,7 +49,7 @@ if __name__ == '__main__' :
     X1 = np.array(X1, dtype=np.float64).reshape(-1,1)
     y1 = np.array(y1, dtype=np.float64)
     
-    data = pd.read_csv("DATA\\data{}_dp45_test3_lissage.csv".format(1), header=None, index_col=None)
+    # data = pd.read_csv("DATA\\data{}_dp45_test3_lissage.csv".format(1), header=None, index_col=None)
     X2 = data.iloc[300:, 0]
     y2 = data.iloc[300:, 1]  
 
@@ -84,9 +84,6 @@ if __name__ == '__main__' :
 
     # model.set_params(**gcv.best_params_)
     
-    
-    
-
 #%%
     sns.set()
     model.fit(X_train , y_train)
@@ -103,74 +100,78 @@ if __name__ == '__main__' :
 # %%
     TEST = 1
     PIPE = 1
-    
     Z = 6
     traj = 5
+    for Z in [6, 10, 14]: 
  
-    for traj in range(13) :
+        for traj in range(13) :
 
-        data = pd.read_csv("DATA\\X_T{}_P{}_Z{}.csv".format(TEST, PIPE, Z), header=None, index_col=None)
-        alt = pd.read_csv("DATA\\alt_T{}_P{}_Z{}.csv".format(TEST, PIPE, Z), header=None, index_col=None)
-        
-        
+            data = pd.read_csv("DATA\\X_T{}_P{}_Z{}.csv".format(TEST, PIPE, Z), header=None, index_col=None)
+            alt = pd.read_csv("DATA\\alt_T{}_P{}_Z{}.csv".format(TEST, PIPE, Z), header=None, index_col=None)
+            
+            
 
-        # X_test = hlp.lissage(np.array(data.iloc[:,traj]), L=20)
-        X_test = np.array(data.iloc[:,traj])
-        alt = np.array(alt.iloc[:,traj])
-        
-
-
-        # offset = [0.137248, 0.13858, 0.138835][int((z_dep-6)/4)]
-        
-        f = interpolate.interp1d(y1, X1.ravel(), kind='cubic', fill_value="extrapolate")
-        offset = f(Z)
-        
-        # ecart = X_test[0] - 0.137248 # ecart pour test z=6
-        # ecart = X_test[0] - 0.13858 # ecart pour test z=10
-        # ecart = X_test[0] - 0.138835 # ecart pour test z=14
-        
-        ecart = X_test[0] - offset
-        X_test = X_test - ecart
-        
-
-        X_test = np.array(X_test, dtype=np.float64).reshape(-1,1)
- 
-        w = 1271
-        y_pred = y_pred[:w]
-        alt = alt[:w]
-        
-
-        # plt.figure()
-        # plt.plot(X_test, label="".format(traj))
-        
-        fig, ax = plt.subplots(1,2, figsize=(12,4))
-        ax = ax.flatten()
-
-        # x_val = np.linspace( 40.5, 157, 350)
-        x_val = np.linspace( 40, 460, 1271)
-        
-        # ax[0].plot(x_val, hlp.standardization(y_pred), label="y_pred")
-        # ax[0].plot(x_val, hlp.standardization(alt), label="alt")  
-        ax[0].plot(x_val,  y_pred, label="y_pred")
-        ax[0].plot(x_val,  alt, label="alt")  
-        
-        ax[0].set_xlabel(' X (cm) ')
-        ax[0].set_ylabel(' Z (cm) ')
-        ax[0].legend(loc='right')
-
-        # ax[1].plot(x_val , (y_pred-alt)/alt, label = 'erreur relative')
-        ax[1].plot(x_val , X_test, label = 'erreur relative')
-        
+            # X_test = hlp.lissage(np.array(data.iloc[:,traj]), L=20)
+            X_test = np.array(data.iloc[:,traj])
+            alt = np.array(alt.iloc[:,traj])
+            
 
 
-        ax[1].set_xlabel(' X (cm) ')
-        ax[1].set_ylabel(' Z (cm) ')
+            # offset = [0.137248, 0.13858, 0.138835][int((z_dep-6)/4)]
+            
+            f = interpolate.interp1d(y1, X1.ravel(), kind='cubic', fill_value="extrapolate")
+            offset = f(Z)
+            
+            # ecart = X_test[0] - 0.137248 # ecart pour test z=6
+            # ecart = X_test[0] - 0.13858 # ecart pour test z=10
+            # ecart = X_test[0] - 0.138835 # ecart pour test z=14
+            
+            ecart = X_test[0] - offset
+            X_test = X_test - ecart
+            
 
-        plt.suptitle("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
-        plt.legend()
-        
-        
-        # plt.savefig("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
+            X_test = np.array(X_test, dtype=np.float64).reshape(-1,1)
+
+            y_pred = model.predict(X_test)
+            w = 1271
+            y_pred = y_pred[:w]
+            alt = alt[:w]
+            
+
+            # plt.figure()
+            # plt.plot(X_test, label="".format(traj))
+            
+            fig, ax = plt.subplots(1,2, figsize=(12,4))
+            ax = ax.flatten()
+
+            # x_val = np.linspace( 40.5, 157, 350)
+            x_val = np.linspace( 40, 460, 1271)
+            
+            # y_pred =  hlp.standardization(y_pred)
+            # alt =   hlp.standardization(alt)
+
+            
+            ax[0].plot(x_val,  y_pred, label="y_pred")
+            ax[0].plot(x_val,  alt, label="alt")  
+            
+            ax[0].set_xlabel(' X (cm) ')
+            ax[0].set_ylabel(' Z (cm) ')
+            ax[0].legend(loc='right')
+
+            ax[1].plot(x_val , (y_pred-alt)/alt, label = 'erreur')
+            # ax[1].plot(x_val , (y_pred-alt)/alt, label = 'erreur relative')
+            # ax[1].plot(x_val , X_test, label = 'erreur relative')
+            
+
+
+            ax[1].set_xlabel(' X (cm) ')
+            ax[1].set_ylabel(' Z (cm) ')
+
+            plt.suptitle("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
+            plt.legend()
+            
+            
+            plt.savefig("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
          
         
 # %%   
@@ -186,6 +187,7 @@ if __name__ == '__main__' :
     # plt.legend()
     # plt.savefig("Traj {}, Test {} , Pipe {},  Z0  {}".format(traj+1, TEST, PIPE, Z))
     """
+    
 # from scipy import interpolate
 # f = interpolate.interp1d(X_train, y_train, fill_value="extrapolate")
 # y = f(X_test.ravel())
